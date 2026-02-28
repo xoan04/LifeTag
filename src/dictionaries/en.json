@@ -1,0 +1,272 @@
+{
+    "landing": {
+        "nav": {
+            "login": "Login",
+            "getStarted": "Get Started"
+        },
+        "hero": {
+            "badge": "Next-Gen Medical ID",
+            "title1": "Emergency Information.",
+            "title2": "Instantly Accessible.",
+            "subtitle": "Smart QR and NFC identification for humans and pets. Ensure first responders always have the critical information they need to save lives.",
+            "getStarted": "Get Started",
+            "viewDemo": "View Demo"
+        },
+        "problem": {
+            "overline": "The Problem",
+            "title": "When seconds count, silence is fatal.",
+            "cards": {
+                "phones": {
+                    "title": "Locked Phones",
+                    "desc": "In an emergency, you can't unlock your phone to show emergency contacts or medical history."
+                },
+                "allergies": {
+                    "title": "Unknown Allergies",
+                    "desc": "Administering the wrong medication during a crisis can turn a bad situation into a tragedy instantly."
+                },
+                "pets": {
+                    "title": "Lost Pets",
+                    "desc": "Traditional tags only hold a phone number. They don't hold vet info, dietary needs, or alternate contacts."
+                }
+            }
+        },
+        "solution": {
+            "overline": "The Solution",
+            "title": "Your digital lifeline, securely attached to you.",
+            "desc": "LifeTag allows you to create comprehensive digital emergency profiles and link them to multiple modern devices like NFC wristbands, stickers, and keychains. Anyone with a smartphone can scan your LifeTag to instantly access your critical info.",
+            "points": [
+                "Create one digital profile",
+                "Link multiple physical devices",
+                "Scan with any smartphone",
+                "No app required to scan"
+            ]
+        },
+        "howItWorks": {
+            "title": "How It Works",
+            "subtitle": "Setup takes less than 3 minutes.",
+            "steps": {
+                "one": {
+                    "title": "Create Profile",
+                    "desc": "Add medical history, allergies, and emergency contacts into our secure cloud."
+                },
+                "two": {
+                    "title": "Link Devices",
+                    "desc": "Activate NFC/QR bands or stickers by linking them to your profile via the dashboard."
+                },
+                "three": {
+                    "title": "Emergency Access",
+                    "desc": "First responders simply tap or scan your tag to instantly view your emergency page."
+                }
+            }
+        },
+        "features": {
+            "title": "Powerful Features",
+            "subtitle": "Built from the ground up to be reliable, flexible, and completely secure.",
+            "list": {
+                "devices": {
+                    "title": "Multiple Devices per Profile",
+                    "desc": "Link a wristband, a bike sticker, and a wallet card all to the same profile."
+                },
+                "control": {
+                    "title": "Individual Device Control",
+                    "desc": "Lose a tag? Unlink it instantly from your dashboard without affecting the others."
+                },
+                "notifications": {
+                    "title": "Scan Notifications",
+                    "desc": "Get SMS or Email alerts instantly when your tag is scanned by a responder."
+                },
+                "pets": {
+                    "title": "Profiles for Pets",
+                    "desc": "Create specialized profiles for pets including vet info, rewards, and rabies vaccination status."
+                },
+                "realtime": {
+                    "title": "Real-time Updates",
+                    "desc": "Change your medication or contact info online. Devices update instantly."
+                },
+                "noApp": {
+                    "title": "No App Required",
+                    "desc": "Responpected do not need an app. They just scan using their native phone camera."
+                }
+            }
+        },
+        "pricing": {
+            "title": "Simple, transparent pricing",
+            "subtitle": "Protect yourself and your loved ones today.",
+            "monthly": "Monthly",
+            "yearly": "Yearly",
+            "save": "Save 20%",
+            "plans": {
+                "essential": {
+                    "name": "Essential",
+                    "desc": "For individuals who want basic protection.",
+                    "features": [
+                        "1 Profile (Human or Pet)",
+                        "1 NFC/QR Device included",
+                        "Basic public emergency page",
+                        "Standard support"
+                    ],
+                    "cta": "Choose Essential"
+                },
+                "family": {
+                    "name": "Family",
+                    "badge": "Most Popular",
+                    "desc": "Total peace of mind for the whole household.",
+                    "features": [
+                        "Up to 5 Profiles",
+                        "2 Devices per profile included",
+                        "Instant Scan Notifications",
+                        "Full scan history dashboard",
+                        "Priority support"
+                    ],
+                    "cta": "Choose Family"
+                },
+                "pro": {
+                    "name": "Pro",
+                    "desc": "For large families, caretakers, and organizations.",
+                    "features": [
+                        "Up to 15 Profiles",
+                        "Unlimited Device linkings",
+                        "Role & Caretaker management",
+                        "Custom branding on profiles",
+                        "24/7 Dedicated Support"
+                    ],
+                    "cta": "Choose Pro"
+                }
+            }
+        },
+        "trust": {
+            "tokens": {
+                "title": "Encrypted Tokens",
+                "desc": "Every device URL is cryptographically secure and unguessable."
+            },
+            "privacy": {
+                "title": "Privacy First",
+                "desc": "You control what information is public. Hide your profile at any time."
+            },
+            "cloud": {
+                "title": "Secure Cloud",
+                "desc": "Enterprise-grade infrastructure ensures 99.99% uptime when you need it."
+            }
+        },
+        "cta": {
+            "title": "Be prepared. Stay protected.",
+            "desc": "Join thousands of individuals and families who trust LifeTag to keep them safe in emergencies. Start your journey to peace of mind today.",
+            "button": "Create Your Account"
+        },
+        "footer": {
+            "desc": "Smart identification for modern emergencies. We believe everyone deserves to have their critical medical information instantly accessible when it matters most.",
+            "product": "Product",
+            "productLinks": {
+                "features": "Features",
+                "pricing": "Pricing",
+                "pets": "For Pets",
+                "devices": "Devices"
+            },
+            "company": "Company",
+            "companyLinks": {
+                "about": "About",
+                "blog": "Blog",
+                "contact": "Contact",
+                "partners": "Partners"
+            },
+            "subscribe": {
+                "title": "Subscribe to Updates",
+                "placeholder": "Enter your email",
+                "button": "Subscribe"
+            },
+            "rights": "© 2026 LifeTag Inc. All rights reserved.",
+            "legal": {
+                "privacy": "Privacy Policy",
+                "terms": "Terms of Service",
+                "cookies": "Cookie Policy"
+            }
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Welcome back",
+            "subtitle": "Sign in to manage your LifeTag profiles",
+            "email": "Email Address",
+            "password": "Password",
+            "forgot": "Forgot password?",
+            "submit": "Sign In",
+            "noAccount": "Don't have an account?",
+            "register": "Sign up"
+        },
+        "register": {
+            "title": "Create your account",
+            "subtitle": "Start protecting your loved ones today",
+            "name": "Full Name",
+            "email": "Email Address",
+            "password": "Password",
+            "submit": "Create Account",
+            "hasAccount": "Already have an account?",
+            "login": "Sign in"
+        }
+    },
+    "dashboard": {
+        "nav": {
+            "overview": "Overview",
+            "profiles": "Profiles",
+            "devices": "Devices",
+            "settings": "Settings",
+            "logout": "Logout"
+        },
+        "home": {
+            "welcome": "Welcome back",
+            "quickStats": "Quick Stats",
+            "activeProfiles": "Active Profiles",
+            "activeDevices": "Active Devices",
+            "recentScans": "Recent Scans",
+            "addProfile": "Add Profile",
+            "activateDevice": "Activate Device"
+        }
+    },
+    "profile": {
+        "human": "Human Profile",
+        "pet": "Pet Profile",
+        "basic": "Basic Information",
+        "medical": "Medical Information",
+        "contacts": "Emergency Contacts",
+        "devices": "Linked Devices",
+        "save": "Save Changes",
+        "fields": {
+            "name": "Full Name",
+            "bloodType": "Blood Type",
+            "dob": "Date of Birth",
+            "allergies": "Allergies",
+            "medications": "Medications",
+            "conditions": "Medical Conditions",
+            "notes": "Additional Notes"
+        }
+    },
+    "emergency": {
+        "notFound": {
+            "title": "Profile Not Found",
+            "desc": "The emergency profile you scanned does not exist or has been removed."
+        },
+        "inactive": {
+            "title": "Profile/Device Inactive",
+            "lost": "This LifeTag device has been reported as lost by its owner.",
+            "disabled": "This emergency profile or device is currently disabled by the owner."
+        },
+        "blood": "BLOOD",
+        "allergies": "CRITICAL ALLERGIES",
+        "contactsTitle": "Emergency Contacts",
+        "call": "CALL",
+        "callOwner": "CALL OWNER",
+        "whatsappOwner": "WHATSAPP OWNER",
+        "human": {
+            "conditionsTitle": "Medical Conditions",
+            "medicationsTitle": "Current Medications",
+            "none": "None reported"
+        },
+        "pet": {
+            "detailsTitle": "Pet Details",
+            "breedSpecies": "Breed / Species",
+            "reward": "Reward Offered",
+            "vetTitle": "Veterinarian",
+            "vaccination": "Vaccination Status"
+        }
+    }
+}

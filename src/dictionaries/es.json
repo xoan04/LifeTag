@@ -1,0 +1,272 @@
+{
+    "landing": {
+        "nav": {
+            "login": "Iniciar Sesión",
+            "getStarted": "Empezar"
+        },
+        "hero": {
+            "badge": "ID Médico de Nueva Generación",
+            "title1": "Información de Emergencia.",
+            "title2": "Accesible al Instante.",
+            "subtitle": "Identificación inteligente QR y NFC para humanos y mascotas. Asegúrate de que los socorristas siempre tengan la información crítica que necesitan para salvar vidas.",
+            "getStarted": "Comenzar gratis",
+            "viewDemo": "Ver Demo"
+        },
+        "problem": {
+            "overline": "El Problema",
+            "title": "Cuando los segundos cuentan, el silencio es fatal.",
+            "cards": {
+                "phones": {
+                    "title": "Teléfonos Bloqueados",
+                    "desc": "En una emergencia, no puedes desbloquear tu teléfono para mostrar contactos o historial médico."
+                },
+                "allergies": {
+                    "title": "Alergias Desconocidas",
+                    "desc": "Administrar el medicamento equivocado durante una crisis puede convertir una mala situación en una tragedia al instante."
+                },
+                "pets": {
+                    "title": "Mascotas Perdidas",
+                    "desc": "Las placas tradicionales solo tienen un teléfono. No contienen información del veterinario, dieta o contactos alternos."
+                }
+            }
+        },
+        "solution": {
+            "overline": "La Solución",
+            "title": "Tu línea de vida digital, pegada a ti de forma segura.",
+            "desc": "LifeTag te permite crear perfiles de emergencia digitales completos y enlazarlos a múltiples dispositivos modernos como pulseras NFC, stickers y llaveros. Cualquiera con un smartphone puede escanear tu LifeTag para acceder al instante a tu información crítica.",
+            "points": [
+                "Crea un solo perfil digital",
+                "Enlaza múltiples dispositivos físicos",
+                "Escanea con cualquier smartphone",
+                "No requiere descargar ninguna app"
+            ]
+        },
+        "howItWorks": {
+            "title": "Cómo Funciona",
+            "subtitle": "La configuración toma menos de 3 minutos.",
+            "steps": {
+                "one": {
+                    "title": "Crea tu Perfil",
+                    "desc": "Agrega historial médico, alergias y contactos de emergencia en nuestra nube segura."
+                },
+                "two": {
+                    "title": "Enlaza Dispositivos",
+                    "desc": "Activa pulseras o stickers NFC/QR enlazándolos a tu perfil desde el panel de control."
+                },
+                "three": {
+                    "title": "Acceso de Emergencia",
+                    "desc": "Los socorristas simplemente tocan o escanean tu placa para ver tu página de emergencia al instante."
+                }
+            }
+        },
+        "features": {
+            "title": "Funciones Poderosas",
+            "subtitle": "Construido desde cero para ser confiable, flexible y completamente seguro.",
+            "list": {
+                "devices": {
+                    "title": "Múltiples Dispositivos por Perfil",
+                    "desc": "Enlaza una pulsera, un sticker para bicicleta y una tarjeta de cartera al mismo perfil."
+                },
+                "control": {
+                    "title": "Control Individual",
+                    "desc": "¿Perdiste una placa? Desvincúlala al instante desde tu panel sin afectar a las demás."
+                },
+                "notifications": {
+                    "title": "Notificaciones de Escaneo",
+                    "desc": "Recibe alertas por SMS o correo al instante cuando un socorrista escanee tu placa."
+                },
+                "pets": {
+                    "title": "Perfiles para Mascotas",
+                    "desc": "Crea perfiles especializados para mascotas incluyendo info del veterinario, recompensas y vacunas."
+                },
+                "realtime": {
+                    "title": "Actualizaciones en Tiempo Real",
+                    "desc": "Cambia tu medicación o información de contacto en línea. Los dispositivos se actualizan al instante."
+                },
+                "noApp": {
+                    "title": "No Requiere App",
+                    "desc": "Los socorristas no necesitan una app. Solo escanean usando la cámara nativa de su teléfono."
+                }
+            }
+        },
+        "pricing": {
+            "title": "Precios simples y transparentes",
+            "subtitle": "Protégete a ti y a tus seres queridos hoy.",
+            "monthly": "Mensual",
+            "yearly": "Anual",
+            "save": "Ahorra 20%",
+            "plans": {
+                "essential": {
+                    "name": "Esencial",
+                    "desc": "Para individuos que desean protección básica.",
+                    "features": [
+                        "1 Perfil (Humano o Mascota)",
+                        "1 Dispositivo NFC/QR incluido",
+                        "Página de emergencia pública básica",
+                        "Soporte estándar"
+                    ],
+                    "cta": "Elegir Esencial"
+                },
+                "family": {
+                    "name": "Familiar",
+                    "badge": "Más Popular",
+                    "desc": "Tranquilidad total para todo el hogar.",
+                    "features": [
+                        "Hasta 5 Perfiles",
+                        "2 Dispositivos por perfil incluidos",
+                        "Notificaciones de escaneo al instante",
+                        "Panel con historial completo",
+                        "Soporte prioritario"
+                    ],
+                    "cta": "Elegir Familiar"
+                },
+                "pro": {
+                    "name": "Pro",
+                    "desc": "Para familias grandes, cuidadores y organizaciones.",
+                    "features": [
+                        "Hasta 15 Perfiles",
+                        "Enlace de dispositivos ilimitado",
+                        "Manejo de Roles y Cuidadores",
+                        "Marca personalizada en perfiles",
+                        "Soporte Dedicado 24/7"
+                    ],
+                    "cta": "Elegir Pro"
+                }
+            }
+        },
+        "trust": {
+            "tokens": {
+                "title": "Tokens Encriptados",
+                "desc": "Cada URL de dispositivo es criptográficamente segura e imposible de adivinar."
+            },
+            "privacy": {
+                "title": "Privacidad Primero",
+                "desc": "Tú controlas qué información es pública. Oculta tu perfil en cualquier momento."
+            },
+            "cloud": {
+                "title": "Nube Segura",
+                "desc": "Infraestructura de nivel empresarial asegura 99.99% de tiempo de actividad cuando lo necesitas."
+            }
+        },
+        "cta": {
+            "title": "Mantente preparado. Mantente protegido.",
+            "desc": "Únete a las miles de personas y familias que confían en LifeTag para mantenerse seguros en emergencias. Comienza tu viaje hacia la tranquilidad hoy.",
+            "button": "Crear tu Cuenta"
+        },
+        "footer": {
+            "desc": "Identificación inteligente para emergencias modernas. Creemos que todos merecen tener su información médica crítica accesible al instante cuando más importa.",
+            "product": "Producto",
+            "productLinks": {
+                "features": "Funciones",
+                "pricing": "Precios",
+                "pets": "Para Mascotas",
+                "devices": "Dispositivos"
+            },
+            "company": "Compañía",
+            "companyLinks": {
+                "about": "Nosotros",
+                "blog": "Blog",
+                "contact": "Contacto",
+                "partners": "Socios"
+            },
+            "subscribe": {
+                "title": "Suscríbete para Actualizaciones",
+                "placeholder": "Ingresa tu correo",
+                "button": "Suscribirse"
+            },
+            "rights": "© 2026 LifeTag Inc. Todos los derechos reservados.",
+            "legal": {
+                "privacy": "Aviso de Privacidad",
+                "terms": "Términos de Servicio",
+                "cookies": "Política de Cookies"
+            }
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Bienvenido de nuevo",
+            "subtitle": "Inicia sesión para administrar tus perfiles de LifeTag",
+            "email": "Correo Electrónico",
+            "password": "Contraseña",
+            "forgot": "¿Olvidaste tu contraseña?",
+            "submit": "Iniciar Sesión",
+            "noAccount": "¿No tienes una cuenta?",
+            "register": "Regístrate"
+        },
+        "register": {
+            "title": "Crea tu cuenta",
+            "subtitle": "Comienza a proteger a tus seres queridos hoy",
+            "name": "Nombre Completo",
+            "email": "Correo Electrónico",
+            "password": "Contraseña",
+            "submit": "Crear Cuenta",
+            "hasAccount": "¿Ya tienes una cuenta?",
+            "login": "Inicia sesión"
+        }
+    },
+    "dashboard": {
+        "nav": {
+            "overview": "Resumen",
+            "profiles": "Perfiles",
+            "devices": "Dispositivos",
+            "settings": "Ajustes",
+            "logout": "Cerrar Sesión"
+        },
+        "home": {
+            "welcome": "Bienvenido de nuevo",
+            "quickStats": "Estadísticas Rápidas",
+            "activeProfiles": "Perfiles Activos",
+            "activeDevices": "Dispositivos Activos",
+            "recentScans": "Escaneos Recientes",
+            "addProfile": "Agregar Perfil",
+            "activateDevice": "Activar Dispositivo"
+        }
+    },
+    "profile": {
+        "human": "Perfil Humano",
+        "pet": "Perfil de Mascota",
+        "basic": "Información Básica",
+        "medical": "Información Médica",
+        "contacts": "Contactos de Emergencia",
+        "devices": "Dispositivos Vinculados",
+        "save": "Guardar Cambios",
+        "fields": {
+            "name": "Nombre Completo",
+            "bloodType": "Tipo de Sangre",
+            "dob": "Fecha de Nacimiento",
+            "allergies": "Alergias",
+            "medications": "Medicamentos",
+            "conditions": "Condiciones Médicas",
+            "notes": "Notas Adicionales"
+        }
+    },
+    "emergency": {
+        "notFound": {
+            "title": "Perfil No Encontrado",
+            "desc": "El perfil de emergencia que escaneaste no existe o ha sido eliminado."
+        },
+        "inactive": {
+            "title": "Perfil/Dispositivo Inactivo",
+            "lost": "Este dispositivo LifeTag ha sido reportado como perdido por su dueño.",
+            "disabled": "Este perfil de emergencia o dispositivo está actualmente desactivado por el dueño."
+        },
+        "blood": "SANGRE",
+        "allergies": "ALERGIAS CRÍTICAS",
+        "contactsTitle": "Contactos de Emergencia",
+        "call": "LLAMAR A",
+        "callOwner": "LLAMAR AL DUEÑO",
+        "whatsappOwner": "WHATSAPP",
+        "human": {
+            "conditionsTitle": "Condiciones Médicas",
+            "medicationsTitle": "Medicamentos Actuales",
+            "none": "Ninguno reportado"
+        },
+        "pet": {
+            "detailsTitle": "Detalles de Mascota",
+            "breedSpecies": "Raza / Especie",
+            "reward": "Recompensa Ofrecida",
+            "vetTitle": "Veterinario",
+            "vaccination": "Estado de Vacunación"
+        }
+    }
+}
