@@ -29,6 +29,19 @@ export function middleware(request: NextRequest) {
         (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
     );
 
+    // Check if it's a protected route (e.g., /dashboard)
+    const isProtectedRoute = i18n.locales.some(
+        (locale) => pathname.startsWith(`/${locale}/dashboard`) || pathname === `/${locale}/dashboard`
+    );
+
+    if (isProtectedRoute) {
+        const token = request.cookies.get('lifeTag_token')?.value;
+        if (!token) {
+            const locale = pathname.split('/')[1] || getLocale(request);
+            return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+        }
+    }
+
     // Redirect if there is no locale
     if (pathnameIsMissingLocale) {
         const locale = getLocale(request);

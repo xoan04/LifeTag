@@ -216,10 +216,32 @@
             "welcome": "Welcome back",
             "quickStats": "Quick Stats",
             "activeProfiles": "Active Profiles",
+            "humanProfiles": "Human Profiles",
+            "petProfiles": "Pet Profiles",
             "activeDevices": "Active Devices",
             "recentScans": "Recent Scans",
             "addProfile": "Add Profile",
             "activateDevice": "Activate Device"
+        },
+        "activate": {
+            "title": "Activate LifeTag",
+            "subtitle": "Link a new physical band or tag to one of your profiles.",
+            "chooseMethod": "Choose a scanning method",
+            "scanQR": "Scan QR",
+            "scanNFC": "Scan NFC",
+            "enterCode": "Enter Code Manually",
+            "step1": "STEP 1. DEVICE ID",
+            "enterCodePlaceholder": "Enter the 6-character code",
+            "retryScanner": "Retry Scanner",
+            "step2": "STEP 2. SELECT ACTION",
+            "optionA": "Option A: Link to an existing profile",
+            "selectProfile": "Select profile",
+            "linkExisting": "Link to Existing Profile",
+            "or": "OR",
+            "optionB": "Option B: Create a new profile for this tag",
+            "createNew": "Create New Profile",
+            "human": "Human",
+            "pet": "Pet"
         }
     },
     "profile": {
@@ -267,6 +289,25 @@
             "reward": "Reward Offered",
             "vetTitle": "Veterinarian",
             "vaccination": "Vaccination Status"
+        }
+    },
+    "account": {
+        "title": "Account Settings",
+        "profile": {
+            "title": "User Profile",
+            "subtitle": "Manage your personal information",
+            "name": "Full Name",
+            "email": "Email Address",
+            "save": "Save Changes"
+        },
+        "subscription": {
+            "title": "Subscription Plan",
+            "subtitle": "Manage your current plan and billing",
+            "currentPlan": "Current Plan",
+            "billingCycle": "Billing Cycle",
+            "updatePlan": "Update Plan",
+            "monthly": "Monthly",
+            "yearly": "Yearly"
         }
     }
 }

@@ -216,10 +216,32 @@
             "welcome": "Bienvenido de nuevo",
             "quickStats": "Estadísticas Rápidas",
             "activeProfiles": "Perfiles Activos",
+            "humanProfiles": "Perfiles Humanos",
+            "petProfiles": "Perfiles de Mascotas",
             "activeDevices": "Dispositivos Activos",
             "recentScans": "Escaneos Recientes",
             "addProfile": "Agregar Perfil",
             "activateDevice": "Activar Dispositivo"
+        },
+        "activate": {
+            "title": "Activar LifeTag",
+            "subtitle": "Enlaza una nueva banda física o placa a uno de tus perfiles.",
+            "chooseMethod": "Elige un método de escaneo",
+            "scanQR": "Escanear QR",
+            "scanNFC": "Escanear NFC",
+            "enterCode": "Ingresar Código Manualmente",
+            "step1": "PASO 1. ID DEL DISPOSITIVO",
+            "enterCodePlaceholder": "Ingresa el código de 6 caracteres",
+            "retryScanner": "Reintentar Escáner",
+            "step2": "PASO 2. SELECCIONAR ACCIÓN",
+            "optionA": "Opción A: Enlazar a un perfil existente",
+            "selectProfile": "Seleccionar perfil",
+            "linkExisting": "Enlazar a Perfil Existente",
+            "or": "O",
+            "optionB": "Opción B: Crear un nuevo perfil para esta placa",
+            "createNew": "Crear Nuevo Perfil",
+            "human": "Humano",
+            "pet": "Mascota"
         }
     },
     "profile": {
@@ -267,6 +289,25 @@
             "reward": "Recompensa Ofrecida",
             "vetTitle": "Veterinario",
             "vaccination": "Estado de Vacunación"
+        }
+    },
+    "account": {
+        "title": "Ajustes de Cuenta",
+        "profile": {
+            "title": "Perfil de Usuario",
+            "subtitle": "Administra tu información personal",
+            "name": "Nombre Completo",
+            "email": "Correo Electrónico",
+            "save": "Guardar Cambios"
+        },
+        "subscription": {
+            "title": "Plan de Suscripción",
+            "subtitle": "Administra tu plan actual y facturación",
+            "currentPlan": "Plan Actual",
+            "billingCycle": "Ciclo de Facturación",
+            "updatePlan": "Actualizar Plan",
+            "monthly": "Mensual",
+            "yearly": "Anual"
         }
     }
 }

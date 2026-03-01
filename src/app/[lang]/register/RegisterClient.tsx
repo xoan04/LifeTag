@@ -1,14 +1,42 @@
 'use client';
-import { Box, Card, CardContent, Typography, TextField, Button, Link } from '@mui/material';
+import { useState } from 'react';
+import { Box, Card, CardContent, Typography, TextField, Button, Link, CircularProgress, Alert } from '@mui/material';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import { useRouter } from 'next/navigation';
+import { AuthUseCases } from '@/useCases/authUseCases';
 
 export default function RegisterClient({ dictionary, lang }: { dictionary: any; lang: string }) {
     const router = useRouter();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleRegister = (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
-        router.push(`/${lang}/dashboard`);
+        setError(null);
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await AuthUseCases.registerUser({
+                name,
+                email,
+                password
+            });
+            router.push(`/${lang}/dashboard`);
+        } catch (err: any) {
+            console.error('Registration failed:', err);
+            setError(err.message || 'Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -33,11 +61,19 @@ export default function RegisterClient({ dictionary, lang }: { dictionary: any; 
                         {dictionary.auth.register.subtitle}
                     </Typography>
 
+                    {error && (
+                        <Alert severity="error" sx={{ width: '100%' }}>
+                            {error}
+                        </Alert>
+                    )}
+
                     <form onSubmit={handleRegister} className="w-full flex flex-col gap-4 mt-2">
                         <TextField
                             fullWidth
                             label={dictionary.auth.register.name}
                             variant="outlined"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             required
                         />
                         <TextField
@@ -45,6 +81,8 @@ export default function RegisterClient({ dictionary, lang }: { dictionary: any; 
                             label={dictionary.auth.register.email}
                             variant="outlined"
                             type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                         <TextField
@@ -52,6 +90,8 @@ export default function RegisterClient({ dictionary, lang }: { dictionary: any; 
                             label={dictionary.auth.register.password}
                             variant="outlined"
                             type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                         <TextField
@@ -59,6 +99,8 @@ export default function RegisterClient({ dictionary, lang }: { dictionary: any; 
                             label={"Confirm " + dictionary.auth.register.password}
                             variant="outlined"
                             type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                         />
                         <Button
@@ -67,9 +109,10 @@ export default function RegisterClient({ dictionary, lang }: { dictionary: any; 
                             color="primary"
                             size="large"
                             fullWidth
+                            disabled={loading}
                             className="mt-4"
                         >
-                            {dictionary.auth.register.submit}
+                            {loading ? <CircularProgress size={24} color="inherit" /> : dictionary.auth.register.submit}
                         </Button>
                     </form>
 

@@ -52,7 +52,7 @@ export default function DashboardClient({ dictionary, lang }: { dictionary: any,
                             <Box display="flex" alignItems="center" justifyContent="space-between">
                                 <Box>
                                     <Typography color="textSecondary" gutterBottom variant="overline">
-                                        Human Profiles
+                                        {dictionary.dashboard.home.humanProfiles}
                                     </Typography>
                                     <Typography variant="h3">{humanProfiles}</Typography>
                                 </Box>
@@ -68,7 +68,7 @@ export default function DashboardClient({ dictionary, lang }: { dictionary: any,
                             <Box display="flex" alignItems="center" justifyContent="space-between">
                                 <Box>
                                     <Typography color="textSecondary" gutterBottom variant="overline">
-                                        Pet Profiles
+                                        {dictionary.dashboard.home.petProfiles}
                                     </Typography>
                                     <Typography variant="h3">{petProfiles}</Typography>
                                 </Box>

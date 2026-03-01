@@ -1,12 +1,13 @@
 import { getDictionary } from '@/dictionaries/getDictionary';
 import { Locale } from '@/i18n-config';
-import ActivateClient from '@/app/[lang]/dashboard/activate/ActivateClient';
+import AccountClient from './AccountClient';
 
-export default async function ActivateDevicePage({
+export default async function AccountPage({
     params: { lang },
 }: {
     params: { lang: Locale };
 }) {
     const dictionary = await getDictionary(lang);
-    return <ActivateClient dictionary={dictionary} lang={lang} />;
+
+    return <AccountClient dictionary={dictionary} lang={lang} />;
 }
