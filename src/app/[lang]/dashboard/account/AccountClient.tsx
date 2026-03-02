@@ -6,6 +6,7 @@ import {
     Alert, CircularProgress, Paper
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
+import EditIcon from '@mui/icons-material/Edit';
 import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import { UserUseCases } from '@/useCases/userUseCases';
 import { User } from '@/models/auth';
@@ -17,23 +18,26 @@ export default function AccountClient({ dictionary, lang }: { dictionary: any, l
     const [plan, setPlan] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                // Try from localStorage first for instant feel
+                // Opcional: datos de localStorage para mostrar algo al instante
                 const localUser = localStorage.getItem('lifeTag_user');
                 if (localUser) {
-                    const parsed = JSON.parse(localUser);
-                    setUser(parsed);
-                    setName(parsed.name || '');
-                    setEmail(parsed.email || '');
-                    setPlan(parsed.subscriptionPlan || 'FREE');
+                    try {
+                        const parsed = JSON.parse(localUser);
+                        setUser(parsed);
+                        setName(parsed.name || '');
+                        setEmail(parsed.email || '');
+                        setPlan(parsed.subscriptionPlan || 'FREE');
+                    } catch (_) {}
                 }
 
-                // Then fetch fresh data
-                const freshUser = await UserUseCases.getProfile();
+                // Fuente de verdad: GET /api/user/me (modelo → servicio → use case)
+                const freshUser = await UserUseCases.getMe();
                 setUser(freshUser);
                 setName(freshUser.name || '');
                 setEmail(freshUser.email || '');
@@ -52,13 +56,23 @@ export default function AccountClient({ dictionary, lang }: { dictionary: any, l
         setSaving(true);
         setMessage(null);
         try {
-            await UserUseCases.updateProfile({ name, email });
-            setMessage({ type: 'success', text: 'Profile updated successfully' });
+            const updated = await UserUseCases.updateProfile({ name, email });
+            setUser(updated);
+            setMessage({ type: 'success', text: dictionary.account.profile.saveSuccess });
+            setIsEditingProfile(false);
         } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Error updating profile' });
+            setMessage({ type: 'error', text: error?.message ?? dictionary.account.profile.saveError });
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleCancelEdit = () => {
+        if (user) {
+            setName(user.name ?? '');
+            setEmail(user.email ?? '');
+        }
+        setIsEditingProfile(false);
     };
 
     const handleUpdatePlan = async () => {
@@ -99,11 +113,26 @@ export default function AccountClient({ dictionary, lang }: { dictionary: any, l
                 <Grid size={{ xs: 12, md: 6 }}>
                     <Card variant="outlined" sx={{ height: '100%' }}>
                         <CardContent sx={{ p: 4 }}>
-                            <Box display="flex" alignItems="center" gap={1} mb={3}>
-                                <PersonIcon color="primary" />
-                                <Typography variant="h6" fontWeight={600}>
-                                    {dictionary.account.profile.title}
-                                </Typography>
+                            <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1} mb={3}>
+                                <Box display="flex" alignItems="center" gap={1}>
+                                    <PersonIcon color="primary" />
+                                    <Typography variant="h6" fontWeight={600}>
+                                        {dictionary.account.profile.title}
+                                    </Typography>
+                                </Box>
+                                {!isEditingProfile ? (
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<EditIcon />}
+                                        onClick={() => setIsEditingProfile(true)}
+                                    >
+                                        {dictionary.account.profile.edit}
+                                    </Button>
+                                ) : (
+                                    <Button variant="outlined" color="inherit" onClick={handleCancelEdit}>
+                                        {dictionary.account.profile.cancel}
+                                    </Button>
+                                )}
                             </Box>
                             <Typography variant="body2" color="text.secondary" mb={4}>
                                 {dictionary.account.profile.subtitle}
@@ -116,21 +145,26 @@ export default function AccountClient({ dictionary, lang }: { dictionary: any, l
                                         label={dictionary.account.profile.name}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
+                                        InputProps={{ readOnly: !isEditingProfile }}
                                     />
                                     <TextField
                                         fullWidth
                                         label={dictionary.account.profile.email}
+                                        type="email"
                                         value={email}
-                                        disabled // Usually email is not editable directly in simple flows
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        InputProps={{ readOnly: !isEditingProfile }}
                                     />
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        disabled={saving}
-                                        sx={{ alignSelf: 'flex-start', mt: 1 }}
-                                    >
-                                        {saving ? <CircularProgress size={24} /> : dictionary.account.profile.save}
-                                    </Button>
+                                    {isEditingProfile && (
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            disabled={saving}
+                                            sx={{ alignSelf: 'flex-start', mt: 1 }}
+                                        >
+                                            {saving ? <CircularProgress size={24} /> : dictionary.account.profile.save}
+                                        </Button>
+                                    )}
                                 </Box>
                             </form>
                         </CardContent>
@@ -165,6 +199,11 @@ export default function AccountClient({ dictionary, lang }: { dictionary: any, l
                                     </Select>
                                 </FormControl>
 
+                                {user?.subscriptionStatus && (
+                                    <Typography variant="body2" color="text.secondary">
+                                        {dictionary.account.subscription.status}: {user.subscriptionStatus}
+                                    </Typography>
+                                )}
                                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
                                     <Typography variant="subtitle2" fontWeight={700}>
                                         {plan === 'FREE' ? 'Upgrade to PRO for more storage!' : 'You are currently on ' + plan}

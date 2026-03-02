@@ -191,7 +191,8 @@
             "forgot": "¿Olvidaste tu contraseña?",
             "submit": "Iniciar Sesión",
             "noAccount": "¿No tienes una cuenta?",
-            "register": "Regístrate"
+            "register": "Regístrate",
+            "errorGeneric": "Error al iniciar sesión. Intenta de nuevo."
         },
         "register": {
             "title": "Crea tu cuenta",
@@ -202,6 +203,29 @@
             "submit": "Crear Cuenta",
             "hasAccount": "¿Ya tienes una cuenta?",
             "login": "Inicia sesión"
+        },
+        "forgotPassword": {
+            "title": "Recuperar contraseña",
+            "subtitle": "Ingresa tu correo y te enviaremos un código de verificación.",
+            "subtitleStep2": "Ingresa el código que te enviamos a tu correo y tu nueva contraseña.",
+            "email": "Correo Electrónico",
+            "submit": "Enviar código",
+            "resendCode": "Reenviar código",
+            "resendCodeIn": "Reenviar en {{seconds}}s",
+            "backToLogin": "Volver al inicio de sesión",
+            "snackbarSuccess": "Si existe una cuenta con ese correo, se ha enviado un código de verificación.",
+            "snackbarError": "No se pudo enviar el código. Intenta de nuevo."
+        },
+        "resetPassword": {
+            "title": "Nueva contraseña",
+            "subtitle": "Ingresa el código que recibiste y tu nueva contraseña.",
+            "email": "Correo Electrónico",
+            "otp": "Código de verificación",
+            "newPassword": "Nueva contraseña",
+            "submit": "Restablecer contraseña",
+            "backToLogin": "Volver al inicio de sesión",
+            "snackbarSuccess": "Contraseña restablecida correctamente.",
+            "snackbarError": "No se pudo restablecer la contraseña. Verifica el código e intenta de nuevo."
         }
     },
     "dashboard": {
@@ -291,6 +315,11 @@
             "vaccination": "Estado de Vacunación"
         }
     },
+    "demo": {
+        "banner": "Vista de demostración",
+        "bannerDesc": "Así es como los socorristas ven la información al escanear un LifeTag.",
+        "backHome": "Volver al inicio"
+    },
     "account": {
         "title": "Ajustes de Cuenta",
         "profile": {
@@ -298,12 +327,17 @@
             "subtitle": "Administra tu información personal",
             "name": "Nombre Completo",
             "email": "Correo Electrónico",
-            "save": "Guardar Cambios"
+            "save": "Guardar Cambios",
+            "edit": "Editar",
+            "cancel": "Cancelar",
+            "saveSuccess": "Perfil actualizado correctamente.",
+            "saveError": "Error al actualizar el perfil. Intenta de nuevo."
         },
         "subscription": {
             "title": "Plan de Suscripción",
             "subtitle": "Administra tu plan actual y facturación",
             "currentPlan": "Plan Actual",
+            "status": "Estado",
             "billingCycle": "Ciclo de Facturación",
             "updatePlan": "Actualizar Plan",
             "monthly": "Mensual",

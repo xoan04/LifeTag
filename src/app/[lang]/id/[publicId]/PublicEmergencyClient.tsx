@@ -57,7 +57,7 @@ export default function PublicEmergencyClient({ dictionary, lang, params }: { di
                     onClick={() => window.location.href = `/${lang === 'en' ? 'es' : 'en'}${window.location.pathname.replace(`/${lang}`, '')}`}
                     className="absolute top-6 right-4 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1 rounded-full min-w-0"
                 >
-                    {lang === 'en' ? 'ES' : 'EN'}
+                    {lang === 'en' ? 'EN' : 'ES'}
                 </Button>
                 <Typography variant="h3" fontWeight={800} className="mb-2 tracking-tight">
                     {profile.name.toUpperCase()}

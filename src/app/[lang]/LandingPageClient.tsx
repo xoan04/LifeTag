@@ -37,7 +37,7 @@ export default function LandingPageClient({ dictionary, lang }: { dictionary: an
                             className="font-bold text-gray-500 min-w-0 px-1 sm:px-2 text-sm sm:text-base"
                             onClick={() => window.location.href = `/${lang === 'en' ? 'es' : 'en'}${window.location.pathname.replace(`/${lang}`, '')}`}
                         >
-                            {lang === 'en' ? 'ES' : 'EN'}
+                            {lang === 'en' ? 'EN' : 'ES'}
                         </Button>
                         <Link href={`/${lang}/login`} style={{ textDecoration: 'none' }}>
                             <Button variant="text" color="inherit" className="font-semibold text-gray-600 hidden sm:flex">
@@ -76,9 +76,11 @@ export default function LandingPageClient({ dictionary, lang }: { dictionary: an
                                 {dictionary.landing.hero.getStarted}
                             </Button>
                         </Link>
-                        <Button variant="outlined" color="primary" size="large" className="rounded-full px-10 py-4 font-bold text-lg w-full border-2 hover:bg-gray-50">
-                            {dictionary.landing.hero.viewDemo}
-                        </Button>
+                        <Link href={`/${lang}/demo`} style={{ textDecoration: 'none', width: '100%' }}>
+                            <Button variant="outlined" color="primary" size="large" className="rounded-full px-10 py-4 font-bold text-lg w-full border-2 hover:bg-gray-50">
+                                {dictionary.landing.hero.viewDemo}
+                            </Button>
+                        </Link>
                     </Box>
                 </Container>
             </Box>

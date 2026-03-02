@@ -1,14 +1,30 @@
 import { UserService } from '@/services/userService';
-import { User } from '@/models/auth';
+import { User, UpdateUserRequest } from '@/models/auth';
 
 export class UserUseCases {
-    static async getProfile(): Promise<User> {
-        return UserService.getMe();
+    /**
+     * Obtiene el usuario actual desde GET /api/user/me.
+     * Sincroniza la respuesta en localStorage para mantener sesión actualizada.
+     */
+    static async getMe(): Promise<User> {
+        const user = await UserService.getMe();
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('lifeTag_user', JSON.stringify(user));
+        }
+        return user;
     }
 
-    static async updateProfile(data: { name?: string, email?: string }): Promise<User> {
+    /** @deprecated Usar getMe(). Alias por compatibilidad. */
+    static async getProfile(): Promise<User> {
+        return this.getMe();
+    }
+
+    /**
+     * Actualiza perfil del usuario actual (PUT /api/user/me).
+     * body: { name?, email? }. Sincroniza respuesta en localStorage.
+     */
+    static async updateProfile(data: UpdateUserRequest): Promise<User> {
         const user = await UserService.updateMe(data);
-        // Update local storage if needed
         if (typeof window !== 'undefined') {
             const currentUser = JSON.parse(localStorage.getItem('lifeTag_user') || '{}');
             localStorage.setItem('lifeTag_user', JSON.stringify({ ...currentUser, ...user }));

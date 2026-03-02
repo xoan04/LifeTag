@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
         (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
     );
 
-    // Check if it's a protected route (e.g., /dashboard)
+    // Rutas protegidas: requieren cookie lifeTag_token (la misma que setea el login)
     const isProtectedRoute = i18n.locales.some(
         (locale) => pathname.startsWith(`/${locale}/dashboard`) || pathname === `/${locale}/dashboard`
     );
@@ -45,9 +45,6 @@ export function middleware(request: NextRequest) {
     // Redirect if there is no locale
     if (pathnameIsMissingLocale) {
         const locale = getLocale(request);
-
-        // e.g. incoming request is /products
-        // The new URL is now /en-US/products
         return NextResponse.redirect(
             new URL(
                 `/${locale}${pathname.startsWith('/') ? '' : '/'}${pathname}`,
@@ -55,6 +52,8 @@ export function middleware(request: NextRequest) {
             )
         );
     }
+
+    return NextResponse.next();
 }
 
 export const config = {

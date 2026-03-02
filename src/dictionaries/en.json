@@ -191,7 +191,8 @@
             "forgot": "Forgot password?",
             "submit": "Sign In",
             "noAccount": "Don't have an account?",
-            "register": "Sign up"
+            "register": "Sign up",
+            "errorGeneric": "Sign in failed. Please try again."
         },
         "register": {
             "title": "Create your account",
@@ -202,6 +203,29 @@
             "submit": "Create Account",
             "hasAccount": "Already have an account?",
             "login": "Sign in"
+        },
+        "forgotPassword": {
+            "title": "Forgot password",
+            "subtitle": "Enter your email and we'll send you a verification code.",
+            "subtitleStep2": "Enter the code we sent to your email and your new password.",
+            "email": "Email Address",
+            "submit": "Send code",
+            "resendCode": "Resend code",
+            "resendCodeIn": "Resend in {{seconds}}s",
+            "backToLogin": "Back to login",
+            "snackbarSuccess": "If an account exists with that email, a verification code has been sent.",
+            "snackbarError": "Could not send the code. Please try again."
+        },
+        "resetPassword": {
+            "title": "Reset password",
+            "subtitle": "Enter the code you received and your new password.",
+            "email": "Email Address",
+            "otp": "Verification code",
+            "newPassword": "New password",
+            "submit": "Reset password",
+            "backToLogin": "Back to login",
+            "snackbarSuccess": "Password has been reset successfully.",
+            "snackbarError": "Could not reset password. Check the code and try again."
         }
     },
     "dashboard": {
@@ -291,6 +315,11 @@
             "vaccination": "Vaccination Status"
         }
     },
+    "demo": {
+        "banner": "Demo view",
+        "bannerDesc": "This is how first responders see the information when they scan a LifeTag.",
+        "backHome": "Back to home"
+    },
     "account": {
         "title": "Account Settings",
         "profile": {
@@ -298,12 +327,17 @@
             "subtitle": "Manage your personal information",
             "name": "Full Name",
             "email": "Email Address",
-            "save": "Save Changes"
+            "save": "Save Changes",
+            "edit": "Edit",
+            "cancel": "Cancel",
+            "saveSuccess": "Profile updated successfully.",
+            "saveError": "Error updating profile. Please try again."
         },
         "subscription": {
             "title": "Subscription Plan",
             "subtitle": "Manage your current plan and billing",
             "currentPlan": "Current Plan",
+            "status": "Status",
             "billingCycle": "Billing Cycle",
             "updatePlan": "Update Plan",
             "monthly": "Monthly",

@@ -4,6 +4,7 @@ import { Box, AppBar, Toolbar, Typography, Button, Container, IconButton, Drawer
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useRouter, usePathname } from 'next/navigation';
+import { AuthUseCases } from '@/useCases/authUseCases';
 
 export default function DashboardLayoutClient({ children, dictionary, lang }: { children: React.ReactNode, dictionary: any, lang: string }) {
     const router = useRouter();
@@ -12,6 +13,11 @@ export default function DashboardLayoutClient({ children, dictionary, lang }: { 
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
+    };
+
+    const handleLogout = () => {
+        AuthUseCases.logout();
+        router.push(`/${lang}/login`);
     };
 
     const drawer = (
@@ -37,7 +43,7 @@ export default function DashboardLayoutClient({ children, dictionary, lang }: { 
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton sx={{ textAlign: 'center' }} onClick={() => router.push(`/${lang}/login`)}>
+                    <ListItemButton sx={{ textAlign: 'center' }} onClick={handleLogout}>
                         <ListItemText primary={dictionary.dashboard.nav.logout} />
                     </ListItemButton>
                 </ListItem>
@@ -62,7 +68,7 @@ export default function DashboardLayoutClient({ children, dictionary, lang }: { 
                         onClick={() => window.location.href = `/${lang === 'en' ? 'es' : 'en'}${window.location.pathname.replace(`/${lang}`, '')}`}
                         sx={{ minWidth: 0, px: 1, mr: { xs: 0, sm: 2 }, fontWeight: 'bold' }}
                     >
-                        {lang === 'en' ? 'ES' : 'EN'}
+                        {lang === 'en' ? 'EN' : 'ES'}
                     </Button>
 
                     <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
@@ -87,7 +93,7 @@ export default function DashboardLayoutClient({ children, dictionary, lang }: { 
                         >
                             {dictionary.account.title}
                         </Button>
-                        <Button color="inherit" onClick={() => router.push(`/${lang}/login`)}>{dictionary.dashboard.nav.logout}</Button>
+                        <Button color="inherit" onClick={handleLogout}>{dictionary.dashboard.nav.logout}</Button>
                     </Box>
                 </Toolbar>
             </AppBar>

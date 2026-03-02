@@ -1,13 +1,13 @@
 import { HttpClient } from '@/lib/httpClient';
-import { User } from '@/models/auth';
+import { User, UpdateUserRequest } from '@/models/auth';
 
 export class UserService {
     static async getMe(): Promise<User> {
-        return HttpClient.get<User>('/api/users/me');
+        return HttpClient.get<User>('/api/user/me');
     }
 
-    static async updateMe(data: Partial<User>): Promise<User> {
-        return HttpClient.put<User>('/api/users/me', data);
+    static async updateMe(data: UpdateUserRequest): Promise<User> {
+        return HttpClient.put<User>('/api/user/me', data);
     }
 
     static async updatePlan(plan: string): Promise<User> {

@@ -47,7 +47,7 @@ export default function RegisterClient({ dictionary, lang }: { dictionary: any; 
                 color="primary"
                 sx={{ position: 'absolute', top: 16, right: 16, fontWeight: 'bold' }}
             >
-                {lang === 'en' ? 'ES' : 'EN'}
+                {lang === 'en' ? 'EN' : 'ES'}
             </Button>
             <Card className="max-w-md w-full p-4">
                 <CardContent className="flex flex-col items-center gap-6">

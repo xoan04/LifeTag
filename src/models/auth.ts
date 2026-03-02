@@ -3,6 +3,15 @@ export interface User {
     email: string;
     subscriptionPlan: string;
     name?: string;
+    subscriptionStatus?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+/** Body para PUT /api/user/me */
+export interface UpdateUserRequest {
+    name?: string;
+    email?: string;
 }
 
 export interface RegisterRequest {
@@ -19,4 +28,18 @@ export interface LoginRequest {
 export interface AuthResponse {
     user: User;
     token: string;
+}
+
+export interface ForgotPasswordRequest {
+    email: string;
+}
+
+export interface ResetPasswordRequest {
+    email: string;
+    otp: string;
+    newPassword: string;
+}
+
+export interface MessageResponse {
+    message: string;
 }
