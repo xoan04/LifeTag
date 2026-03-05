@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Box, Typography, Button, Card, CardContent, TextField, MenuItem, CircularProgress, IconButton } from '@mui/material';
+import { useState } from 'react';
+import { Box, Typography, Button, Card, CardContent, TextField, MenuItem, CircularProgress } from '@mui/material';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import NfcIcon from '@mui/icons-material/Nfc';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
@@ -9,20 +9,15 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useRouter } from 'next/navigation';
 import { mockProfiles } from '@/data/mockData';
 import { Profile } from '@/types/profile';
+import { ENABLE_SCANNER } from '@/lib/featureFlags';
 
 export default function ActivateClient({ dictionary, lang }: { dictionary: any, lang: string }) {
     const router = useRouter();
     const [deviceId, setDeviceId] = useState('');
     const [selectedProfileId, setSelectedProfileId] = useState('');
-    const [isScannerEnabled, setIsScannerEnabled] = useState(false);
-    const [inputMode, setInputMode] = useState<'automatic' | 'manual'>('automatic');
+    const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
     const [isScanning, setIsScanning] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        setIsScannerEnabled(process.env.NEXT_PUBLIC_ENABLE_SCANNER === 'true');
-        setInputMode(process.env.NEXT_PUBLIC_ENABLE_SCANNER === 'true' ? 'automatic' : 'manual');
-    }, []);
 
     const handleSimulateScan = (type: 'QR' | 'NFC') => {
         setIsScanning(true);
@@ -58,7 +53,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any, 
 
             <Card sx={{ p: 2 }}>
                 <CardContent>
-                    {!deviceId && isScannerEnabled && inputMode === 'automatic' ? (
+                    {!deviceId && ENABLE_SCANNER && inputMode === 'automatic' ? (
                         <Box display="flex" flexDirection="column" alignItems="center" gap={3} py={4}>
                             <Typography variant="h6" color="text.secondary">
                                 {dictionary.dashboard.activate.chooseMethod}
@@ -118,7 +113,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any, 
                                         startAdornment: <TagIcon color="action" sx={{ mr: 1 }} />
                                     }}
                                 />
-                                {isScannerEnabled && (
+                                {ENABLE_SCANNER && (
                                     <Box display="flex" justifyContent="flex-end" mt={1}>
                                         <Button
                                             size="small"

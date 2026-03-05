@@ -343,5 +343,56 @@
             "monthly": "Monthly",
             "yearly": "Yearly"
         }
+    },
+    "devices": {
+        "title": "My Devices",
+        "subtitle": "NFC/QR devices linked to your profiles",
+        "empty": "You have no registered devices.",
+        "emptyAction": "Activate my first device",
+        "status": {
+            "ACTIVE": "Active",
+            "INACTIVE": "Inactive",
+            "UNACTIVATED": "Not activated"
+        },
+        "type": {
+            "QR_TAG": "QR Tag",
+            "NFC_TAG": "NFC Tag"
+        },
+        "linkedTo": "Linked to",
+        "notLinked": "No profile linked",
+        "register": {
+            "title": "Register device",
+            "tokenLabel": "Device token (ID printed on the tag)",
+            "tokenPlaceholder": "E.g.: ID_2",
+            "typeLabel": "Device type",
+            "submit": "Register",
+            "successToast": "Device registered. Now link it to a profile.",
+            "errorDemo": "Your Free plan is demo only. Please upgrade your plan.",
+            "errorLimit": "You have reached your plan's device limit. Please upgrade.",
+            "errorAlreadyExists": "This device token is already registered.",
+            "errorGeneric": "Could not register the device. Please try again."
+        },
+        "activate": {
+            "title": "Activate & link",
+            "profileLabel": "Select a profile",
+            "submit": "Link to profile",
+            "successToast": "Device activated and linked successfully!",
+            "errorNotFound": "Device not found. Please check the token.",
+            "errorAlreadyActive": "This device is already linked to a profile.",
+            "errorProfileLimit": "The selected profile has reached its device limit.",
+            "errorGeneric": "Could not activate the device. Please try again."
+        },
+        "reportLost": {
+            "button": "Report as lost",
+            "successToast": "Device reported as lost.",
+            "errorGeneric": "Could not report the device. Please try again."
+        },
+        "delete": {
+            "button": "Delete",
+            "confirm": "Delete device?",
+            "confirmDesc": "This device will be unlinked and permanently deleted. This action cannot be undone.",
+            "successToast": "Device deleted.",
+            "errorGeneric": "Could not delete the device. Please try again."
+        }
     }
 }

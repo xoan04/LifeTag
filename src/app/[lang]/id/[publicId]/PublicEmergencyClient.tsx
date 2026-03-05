@@ -1,7 +1,8 @@
 'use client';
+import { useState, useEffect } from 'react';
 import {
     Box, Typography, Button, Container, Chip, Accordion,
-    AccordionSummary, AccordionDetails, Paper, Alert
+    AccordionSummary, AccordionDetails, Paper, Alert, CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -9,200 +10,278 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import PetsIcon from '@mui/icons-material/Pets';
-import { mockProfiles, mockDevices } from '@/data/mockData';
 
-export default function PublicEmergencyClient({ dictionary, lang, params }: { dictionary: any; lang: string; params: { publicId: string } }) {
-    const device = mockDevices.find(d => d.deviceToken === params.publicId);
-    const profile = device ? mockProfiles.find(p => p.id === device.profileId) : undefined;
+import { EmergencyUseCases } from '@/useCases/emergencyUseCases';
+import { EmergencyProfile } from '@/models/emergencyProfile';
 
-    if (!device || !profile) {
+export default function PublicEmergencyClient({
+    dictionary,
+    lang,
+    params,
+}: {
+    dictionary: any;
+    lang: string;
+    params: { publicId: string };
+}) {
+    const d = dictionary.emergency;
+    const [profile, setProfile] = useState<EmergencyProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<'not_found' | 'inactive' | 'generic' | null>(null);
+
+    useEffect(() => {
+        // Captura geolocalización del escaneador si el browser lo permite (best-effort)
+        const fetchProfile = (lat?: number, lng?: number) => {
+            EmergencyUseCases.getEmergencyProfile({
+                publicId: params.publicId, // Se envía a la URL del backend
+                lat,
+                lng,
+            })
+                .then(data => {
+                    if (!data.isActive) {
+                        setError('inactive');
+                    } else {
+                        setProfile(data);
+                    }
+                })
+                .catch(err => {
+                    const msg = (err?.message ?? '').toLowerCase();
+                    if (msg.includes('404') || msg.includes('not found')) {
+                        setError('not_found');
+                    } else if (msg.includes('inactive') || msg.includes('disabled')) {
+                        setError('inactive');
+                    } else {
+                        setError('generic');
+                    }
+                })
+                .finally(() => setLoading(false));
+        };
+
+        if (typeof navigator !== 'undefined' && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => fetchProfile(pos.coords.latitude, pos.coords.longitude),
+                () => fetchProfile(), // si rechaza permisos, igual carga sin coords
+                { timeout: 4000 }
+            );
+        } else {
+            fetchProfile();
+        }
+    }, [params.publicId]);
+
+    // ─── Estados de carga / error ────────────────────────────────────────────
+
+    if (loading) {
         return (
-            <Box className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
-                <Paper className="p-8 text-center max-w-sm w-full">
+            <Box minHeight="100vh" display="flex" justifyContent="center" alignItems="center">
+                <CircularProgress color="error" size={48} />
+            </Box>
+        );
+    }
+
+    if (error === 'not_found' || error === 'generic') {
+        return (
+            <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" p={4} bgcolor="grey.100">
+                <Paper sx={{ p: 4, textAlign: 'center', maxWidth: 360, width: '100%' }}>
                     <LocalHospitalIcon color="error" sx={{ fontSize: 64, mb: 2 }} />
-                    <Typography variant="h5" fontWeight="bold" gutterBottom>{dictionary.emergency.notFound.title}</Typography>
-                    <Typography color="text.secondary">
-                        {dictionary.emergency.notFound.desc}
-                    </Typography>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>{d.notFound.title}</Typography>
+                    <Typography color="text.secondary">{d.notFound.desc}</Typography>
                 </Paper>
             </Box>
         );
     }
 
-    if (!profile.isActive || device.status !== 'active') {
+    if (error === 'inactive' || (profile && !profile.isActive)) {
         return (
-            <Box className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
-                <Paper className="p-8 text-center max-w-sm w-full border-t-8 border-gray-400">
-                    <Typography variant="h5" fontWeight="bold" gutterBottom>{dictionary.emergency.inactive.title}</Typography>
-                    <Typography color="text.secondary">
-                        {device.status === 'lost'
-                            ? dictionary.emergency.inactive.lost
-                            : dictionary.emergency.inactive.disabled}
-                    </Typography>
+            <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" p={4} bgcolor="grey.100">
+                <Paper sx={{ p: 4, textAlign: 'center', maxWidth: 360, width: '100%', borderTop: '8px solid grey' }}>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>{d.inactive.title}</Typography>
+                    <Typography color="text.secondary">{d.inactive.disabled}</Typography>
                 </Paper>
             </Box>
         );
     }
+
+    if (!profile) return null;
 
     const isHuman = profile.type === 'HUMAN';
 
+    // Helpers de acceso a campos planos del backend
+    const ec1Phone = profile.emergencyContact1_phone;
+    const ec1Name = profile.emergencyContact1_name;
+    const ec1Relation = profile.emergencyContact1_relation;
+    const ec2Phone = profile.emergencyContact2_phone;
+    const ec2Relation = profile.emergencyContact2_relation;
+
+    const langToggle = () => {
+        window.location.href = `/${lang === 'en' ? 'es' : 'en'}${window.location.pathname.replace(`/${lang}`, '')}`;
+    };
+
+    // ─── Vista principal ──────────────────────────────────────────────────────
+
     return (
-        <Box className="min-h-screen bg-gray-50 pb-24">
-            {/* Top Section */}
-            <Box className="bg-red-800 text-white rounded-b-3xl pt-12 pb-8 px-4 text-center shadow-lg relative">
-                <Box className="absolute top-4 left-4 bg-white/20 p-2 rounded-full">
+        <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', pb: '96px' }}>
+
+            {/* ── Header rojo ── */}
+            <Box sx={{
+                bgcolor: '#7f1d1d', color: 'white', borderRadius: '0 0 24px 24px',
+                pt: 6, pb: 4, px: 2, textAlign: 'center', position: 'relative', boxShadow: 3,
+            }}>
+                {/* Ícono tipo perfil */}
+                <Box sx={{ position: 'absolute', top: 16, left: 16, bgcolor: 'rgba(255,255,255,0.2)', p: 1, borderRadius: '50%' }}>
                     {isHuman ? <LocalHospitalIcon /> : <PetsIcon />}
                 </Box>
+
+                {/* Toggle idioma */}
                 <Button
-                    onClick={() => window.location.href = `/${lang === 'en' ? 'es' : 'en'}${window.location.pathname.replace(`/${lang}`, '')}`}
-                    className="absolute top-6 right-4 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1 rounded-full min-w-0"
+                    onClick={langToggle}
+                    sx={{ position: 'absolute', top: 20, right: 16, bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 'bold', minWidth: 0, px: 1.5, borderRadius: 8 }}
                 >
                     {lang === 'en' ? 'EN' : 'ES'}
                 </Button>
-                <Typography variant="h3" fontWeight={800} className="mb-2 tracking-tight">
+
+                <Typography variant="h3" fontWeight={800} sx={{ letterSpacing: '-0.5px' }}>
                     {profile.name.toUpperCase()}
                 </Typography>
 
-                {isHuman && (
-                    <Box className="flex justify-center mt-4">
+                {/* Chip tipo de sangre solo para humanos */}
+                {isHuman && profile.bloodType && (
+                    <Box display="flex" justifyContent="center" mt={2}>
                         <Chip
                             icon={<LocalHospitalIcon style={{ color: 'white' }} />}
-                            label={`${dictionary.emergency.blood}: ${profile.bloodType}`}
-                            className="bg-red-600 text-white font-bold text-lg p-6 rounded-2xl border-2 border-white/20 shadow-inner"
+                            label={`${d.blood}: ${profile.bloodType}`}
+                            sx={{ bgcolor: '#991b1b', color: 'white', fontWeight: 700, fontSize: '1rem', px: 2, py: 3, border: '2px solid rgba(255,255,255,0.2)' }}
                         />
                     </Box>
                 )}
             </Box>
 
-            <Container maxWidth="sm" className="mt-[-20px] px-4 space-y-4 relative z-10">
+            <Container maxWidth="sm" sx={{ mt: '-20px', px: 2, position: 'relative', zIndex: 10 }}>
 
-                {/* Alerts Section */}
-                {isHuman && profile.allergies && profile.allergies.length > 0 && (
-                    <Alert severity="error" icon={<WarningAmberIcon fontSize="inherit" />} className="rounded-xl border border-red-200">
-                        <Typography variant="subtitle1" fontWeight={700}>{dictionary.emergency.allergies}:</Typography>
+                {/* ── Alerta de alergias ── */}
+                {isHuman && profile.allergies?.length > 0 && (
+                    <Alert severity="error" icon={<WarningAmberIcon fontSize="inherit" />} sx={{ borderRadius: 3, mb: 2 }}>
+                        <Typography variant="subtitle1" fontWeight={700}>{d.allergies}:</Typography>
                         <Typography variant="body1">{profile.allergies.join(', ')}</Typography>
                     </Alert>
                 )}
 
-                {/* Immediate Action Buttons */}
-                <Paper className="p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-                    <Typography variant="subtitle2" color="text.secondary" className="uppercase font-bold tracking-wider mb-2">
-                        {dictionary.emergency.contactsTitle}
+                {/* ── Contactos de emergencia ── */}
+                <Paper sx={{ p: 2, borderRadius: 4, mb: 2, border: '1px solid', borderColor: 'grey.200' }}>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1, mb: 2 }}>
+                        {d.contactsTitle}
                     </Typography>
 
                     {isHuman ? (
-                        <>
-                            <Button
-                                variant="contained"
-                                color="error" // using standard MUI color 'error', 'success', 'warning', 'info' natively supported
-                                size="large"
-                                fullWidth
-                                startIcon={<PhoneIcon />}
-                                href={`tel:${profile.emergencyContact1.phone}`}
-                                className="py-4 text-lg font-bold"
-                            >
-                                {dictionary.emergency.call} {profile.emergencyContact1.relation.toUpperCase()}: {profile.emergencyContact1.name}
-                            </Button>
-                            {profile.emergencyContact2 && (
-                                <Button
-                                    variant="outlined"
-                                    color="error" // standard MUI color
-                                    size="large" fullWidth
-                                    startIcon={<PhoneIcon />}
-                                    href={`tel:${profile.emergencyContact2.phone}`}
-                                    className="py-3 font-semibold"
-                                >
-                                    {dictionary.emergency.call} {profile.emergencyContact2.relation.toUpperCase()}
+                        <Box display="flex" flexDirection="column" gap={1.5}>
+                            {ec1Phone && (
+                                <Button variant="contained" color="error" size="large" fullWidth startIcon={<PhoneIcon />}
+                                    href={`tel:${ec1Phone}`} sx={{ py: 2, fontSize: '1rem', fontWeight: 700 }}>
+                                    {d.call} {ec1Relation?.toUpperCase()}: {ec1Name}
                                 </Button>
                             )}
-                        </>
+                            {ec2Phone && (
+                                <Button variant="outlined" color="error" size="large" fullWidth startIcon={<PhoneIcon />}
+                                    href={`tel:${ec2Phone}`} sx={{ py: 1.5, fontWeight: 600 }}>
+                                    {d.call} {ec2Relation?.toUpperCase()}
+                                </Button>
+                            )}
+                        </Box>
                     ) : (
-                        <>
-                            <Button
-                                variant="contained" color="error" size="large" fullWidth
-                                startIcon={<PhoneIcon />} href={`tel:${profile.ownerPhone}`}
-                                className="py-4 text-lg font-bold"
-                            >
-                                {dictionary.emergency.callOwner}
-                            </Button>
-                            <Button
-                                variant="outlined" color="success" size="large" fullWidth
-                                startIcon={<WhatsAppIcon />} href={`https://wa.me/${profile.ownerPhone.replace(/\D/g, '')}`}
-                                className="py-3 font-semibold"
-                            >
-                                {dictionary.emergency.whatsappOwner}
-                            </Button>
-                        </>
+                        <Box display="flex" flexDirection="column" gap={1.5}>
+                            {profile.ownerPhone && (
+                                <>
+                                    <Button variant="contained" color="error" size="large" fullWidth startIcon={<PhoneIcon />}
+                                        href={`tel:${profile.ownerPhone}`} sx={{ py: 2, fontSize: '1rem', fontWeight: 700 }}>
+                                        {d.callOwner}
+                                    </Button>
+                                    <Button variant="outlined" color="success" size="large" fullWidth startIcon={<WhatsAppIcon />}
+                                        href={`https://wa.me/${profile.ownerPhone.replace(/\D/g, '')}`} sx={{ py: 1.5, fontWeight: 600 }}>
+                                        {d.whatsappOwner}
+                                    </Button>
+                                </>
+                            )}
+                        </Box>
                     )}
                 </Paper>
 
-                {/* Details Accordions */}
-                <Box className="space-y-2 pt-4">
+                {/* ── Accordions de detalles ── */}
+                <Box display="flex" flexDirection="column" gap={1} pt={1}>
                     {isHuman ? (
                         <>
-                            <Accordion className="rounded-2xl before:hidden shadow-sm border border-gray-100">
+                            <Accordion sx={{ borderRadius: '16px !important', '&:before': { display: 'none' }, boxShadow: 1, border: '1px solid', borderColor: 'grey.100' }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6" fontWeight={700}>{dictionary.emergency.human.conditionsTitle}</Typography>
+                                    <Typography variant="h6" fontWeight={700}>{d.human.conditionsTitle}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
-                                    <ul className="list-disc pl-5 space-y-1">
-                                        {profile.medicalConditions.map((cond, i) => (
-                                            <li key={i}><Typography variant="body1">{cond}</Typography></li>
-                                        ))}
-                                    </ul>
-                                    {profile.medicalConditions.length === 0 && <Typography color="text.secondary">{dictionary.emergency.human.none}</Typography>}
+                                    {profile.medicalConditions.length === 0
+                                        ? <Typography color="text.secondary">{d.human.none}</Typography>
+                                        : <ul style={{ paddingLeft: 20, margin: 0 }}>
+                                            {profile.medicalConditions.map((c, i) => <li key={i}><Typography>{c}</Typography></li>)}
+                                        </ul>
+                                    }
                                 </AccordionDetails>
                             </Accordion>
 
-                            <Accordion className="rounded-2xl before:hidden shadow-sm border border-gray-100">
+                            <Accordion sx={{ borderRadius: '16px !important', '&:before': { display: 'none' }, boxShadow: 1, border: '1px solid', borderColor: 'grey.100' }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6" fontWeight={700}>{dictionary.emergency.human.medicationsTitle}</Typography>
+                                    <Typography variant="h6" fontWeight={700}>{d.human.medicationsTitle}</Typography>
                                 </AccordionSummary>
                                 <AccordionDetails>
-                                    <ul className="list-disc pl-5 space-y-1">
-                                        {profile.medications.map((med, i) => (
-                                            <li key={i}><Typography variant="body1">{med}</Typography></li>
-                                        ))}
-                                    </ul>
-                                    {profile.medications.length === 0 && <Typography color="text.secondary">{dictionary.emergency.human.none}</Typography>}
+                                    {profile.medications.length === 0
+                                        ? <Typography color="text.secondary">{d.human.none}</Typography>
+                                        : <ul style={{ paddingLeft: 20, margin: 0 }}>
+                                            {profile.medications.map((m, i) => <li key={i}><Typography>{m}</Typography></li>)}
+                                        </ul>
+                                    }
                                 </AccordionDetails>
                             </Accordion>
                         </>
                     ) : (
                         <>
-                            <Accordion className="rounded-2xl before:hidden shadow-sm border border-gray-100">
+                            <Accordion sx={{ borderRadius: '16px !important', '&:before': { display: 'none' }, boxShadow: 1, border: '1px solid', borderColor: 'grey.100' }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6" fontWeight={700}>{dictionary.emergency.pet.detailsTitle}</Typography>
+                                    <Typography variant="h6" fontWeight={700}>{d.pet.detailsTitle}</Typography>
                                 </AccordionSummary>
-                                <AccordionDetails className="space-y-3">
-                                    <Box>
-                                        <Typography variant="caption" color="text.secondary" className="uppercase font-bold">{dictionary.emergency.pet.breedSpecies}</Typography>
-                                        <Typography variant="body1">{profile.breed} ({profile.species})</Typography>
-                                    </Box>
-                                    {profile.reward && (
-                                        <Alert severity="success" className="mt-2">
-                                            <Typography variant="subtitle2" fontWeight={700}>{dictionary.emergency.pet.reward}:</Typography>
-                                            <Typography variant="body2">{profile.reward}</Typography>
+                                <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {(profile.breed || profile.species) && (
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase' }}>
+                                                {d.pet.breedSpecies}
+                                            </Typography>
+                                            <Typography>{[profile.breed, profile.species].filter(Boolean).join(' / ')}</Typography>
+                                        </Box>
+                                    )}
+                                    {profile.targetReward && (
+                                        <Alert severity="success">
+                                            <Typography variant="subtitle2" fontWeight={700}>{d.pet.reward}:</Typography>
+                                            <Typography variant="body2">{profile.targetReward}</Typography>
                                         </Alert>
                                     )}
                                 </AccordionDetails>
                             </Accordion>
 
-                            <Accordion className="rounded-2xl before:hidden shadow-sm border border-gray-100">
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6" fontWeight={700}>{dictionary.emergency.pet.vetTitle}</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails className="space-y-3">
-                                    <Typography variant="body1" fontWeight={600}>{profile.veterinarian.name}</Typography>
-                                    <Button startIcon={<PhoneIcon />} href={`tel:${profile.veterinarian.phone}`} variant="text">
-                                        {profile.veterinarian.phone}
-                                    </Button>
-                                    <Box className="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                        <Typography variant="caption" fontWeight="bold">{dictionary.emergency.pet.vaccination}:</Typography>
-                                        <p>{profile.vaccinationStatus}</p>
-                                    </Box>
-                                </AccordionDetails>
-                            </Accordion>
+                            {(profile.veterinarian_name || profile.veterinarian_phone) && (
+                                <Accordion sx={{ borderRadius: '16px !important', '&:before': { display: 'none' }, boxShadow: 1, border: '1px solid', borderColor: 'grey.100' }}>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                        <Typography variant="h6" fontWeight={700}>{d.pet.vetTitle}</Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {profile.veterinarian_name && (
+                                            <Typography fontWeight={600}>{profile.veterinarian_name}</Typography>
+                                        )}
+                                        {profile.veterinarian_phone && (
+                                            <Button startIcon={<PhoneIcon />} href={`tel:${profile.veterinarian_phone}`} variant="text">
+                                                {profile.veterinarian_phone}
+                                            </Button>
+                                        )}
+                                        {profile.vaccinationStatus && (
+                                            <Box sx={{ mt: 1, bgcolor: 'grey.50', p: 1.5, borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }}>
+                                                <Typography variant="caption" fontWeight="bold">{d.pet.vaccination}:</Typography>
+                                                <Typography>{profile.vaccinationStatus}</Typography>
+                                            </Box>
+                                        )}
+                                    </AccordionDetails>
+                                </Accordion>
+                            )}
                         </>
                     )}
                 </Box>

@@ -1,9 +1,11 @@
 import { UserService } from '@/services/userService';
 import { User, UpdateUserRequest } from '@/models/auth';
+import { MembershipResponse } from '@/models/plan';
+import { PlanUseCases } from '@/useCases/planUseCases';
 
 export class UserUseCases {
     /**
-     * Obtiene el usuario actual desde GET /api/user/me.
+     * Obtiene el usuario autenticado actual desde GET /api/user/me.
      * Sincroniza la respuesta en localStorage para mantener sesión actualizada.
      */
     static async getMe(): Promise<User> {
@@ -20,7 +22,7 @@ export class UserUseCases {
     }
 
     /**
-     * Actualiza perfil del usuario actual (PUT /api/user/me).
+     * Actualiza perfil del usuario autenticado (PUT /api/user/me).
      * body: { name?, email? }. Sincroniza respuesta en localStorage.
      */
     static async updateProfile(data: UpdateUserRequest): Promise<User> {
@@ -32,12 +34,11 @@ export class UserUseCases {
         return user;
     }
 
-    static async changePlan(plan: string): Promise<User> {
-        const user = await UserService.updatePlan(plan);
-        if (typeof window !== 'undefined') {
-            const currentUser = JSON.parse(localStorage.getItem('lifeTag_user') || '{}');
-            localStorage.setItem('lifeTag_user', JSON.stringify({ ...currentUser, ...user }));
-        }
-        return user;
+    /**
+     * Obtiene la membresía del usuario autenticado con límites y contadores de uso.
+     * Delega a PlanUseCases.getMembership().
+     */
+    static async getMembership(): Promise<MembershipResponse> {
+        return PlanUseCases.getMembership();
     }
 }

@@ -343,5 +343,56 @@
             "monthly": "Mensual",
             "yearly": "Anual"
         }
+    },
+    "devices": {
+        "title": "Mis Dispositivos",
+        "subtitle": "Dispositivos NFC/QR vinculados a tus perfiles",
+        "empty": "No tienes dispositivos registrados.",
+        "emptyAction": "Activar mi primer dispositivo",
+        "status": {
+            "ACTIVE": "Activo",
+            "INACTIVE": "Inactivo",
+            "UNACTIVATED": "Sin activar"
+        },
+        "type": {
+            "QR_TAG": "Tag QR",
+            "NFC_TAG": "Tag NFC"
+        },
+        "linkedTo": "Vinculado a",
+        "notLinked": "Sin perfil vinculado",
+        "register": {
+            "title": "Registrar dispositivo",
+            "tokenLabel": "Token del dispositivo (ID impreso en la placa)",
+            "tokenPlaceholder": "Ej: ID_2",
+            "typeLabel": "Tipo de dispositivo",
+            "submit": "Registrar",
+            "successToast": "Dispositivo registrado. Ahora vincúlalo a un perfil.",
+            "errorDemo": "Tu plan Gratis es solo de demostración. Mejora tu plan.",
+            "errorLimit": "Has alcanzado el límite de dispositivos de tu plan. Mejora tu plan.",
+            "errorAlreadyExists": "Este token de dispositivo ya está registrado.",
+            "errorGeneric": "No se pudo registrar el dispositivo. Intenta de nuevo."
+        },
+        "activate": {
+            "title": "Activar y vincular",
+            "profileLabel": "Selecciona el perfil",
+            "submit": "Vincular a perfil",
+            "successToast": "¡Dispositivo activado y vinculado correctamente!",
+            "errorNotFound": "Dispositivo no encontrado. Verifica el token.",
+            "errorAlreadyActive": "Este dispositivo ya está vinculado a un perfil.",
+            "errorProfileLimit": "El perfil seleccionado ya alcanzó su límite de dispositivos.",
+            "errorGeneric": "No se pudo activar el dispositivo. Intenta de nuevo."
+        },
+        "reportLost": {
+            "button": "Reportar como perdido",
+            "successToast": "Dispositivo reportado como perdido.",
+            "errorGeneric": "No se pudo reportar el dispositivo. Intenta de nuevo."
+        },
+        "delete": {
+            "button": "Eliminar",
+            "confirm": "¿Eliminar dispositivo?",
+            "confirmDesc": "Este dispositivo será desvinculado y eliminado. Esta acción no se puede deshacer.",
+            "successToast": "Dispositivo eliminado.",
+            "errorGeneric": "No se pudo eliminar el dispositivo. Intenta de nuevo."
+        }
     }
 }

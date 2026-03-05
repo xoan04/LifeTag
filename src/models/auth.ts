@@ -1,7 +1,10 @@
+import { PlanCode } from '@/models/plan';
+
 export interface User {
     id: string;
     email: string;
-    subscriptionPlan: string;
+    subscriptionPlan: PlanCode;
+    isSuperAccount: boolean;
     name?: string;
     subscriptionStatus?: string;
     createdAt?: string;
