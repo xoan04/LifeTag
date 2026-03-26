@@ -265,7 +265,10 @@
             "optionB": "Option B: Create a new profile for this tag",
             "createNew": "Create New Profile",
             "human": "Human",
-            "pet": "Pet"
+            "pet": "Pet",
+            "nfcUnsupported": "Your browser does not support Web NFC. Use Chrome on an Android phone with NFC enabled.",
+            "nfcCancelled": "NFC scan was cancelled.",
+            "nfcReadFailed": "Could not read the tag. Hold it near the phone and try again."
         }
     },
     "profile": {

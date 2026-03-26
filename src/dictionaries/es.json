@@ -265,7 +265,10 @@
             "optionB": "Opción B: Crear un nuevo perfil para esta placa",
             "createNew": "Crear Nuevo Perfil",
             "human": "Humano",
-            "pet": "Mascota"
+            "pet": "Mascota",
+            "nfcUnsupported": "Tu navegador no admite lectura NFC en web. Usa Chrome en un Android con NFC activado.",
+            "nfcCancelled": "Lectura NFC cancelada.",
+            "nfcReadFailed": "No se pudo leer el tag. Acerca la etiqueta al teléfono e inténtalo de nuevo."
         }
     },
     "profile": {

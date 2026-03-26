@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Box, Typography, Button, Card, CardContent, TextField, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, TextField, MenuItem, CircularProgress, Alert } from '@mui/material';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import NfcIcon from '@mui/icons-material/Nfc';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
@@ -10,24 +10,47 @@ import { useRouter } from 'next/navigation';
 import { mockProfiles } from '@/data/mockData';
 import { Profile } from '@/types/profile';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
+import { readNfcTagOnce, isWebNfcSupported, classifyNfcFailure } from '@/lib/nfcWeb';
 
 export default function ActivateClient({ dictionary, lang }: { dictionary: any, lang: string }) {
     const router = useRouter();
+    const dAct = dictionary.dashboard.activate;
     const [deviceId, setDeviceId] = useState('');
     const [selectedProfileId, setSelectedProfileId] = useState('');
     const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
     const [isScanning, setIsScanning] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [scanError, setScanError] = useState<string | null>(null);
 
-    const handleSimulateScan = (type: 'QR' | 'NFC') => {
+    const handleScanQR = () => {
+        setScanError(null);
         setIsScanning(true);
-        // Simulate scanning delay
         setTimeout(() => {
             const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
             setDeviceId(randomId);
             setIsScanning(false);
-            setInputMode('manual'); // Switch to manual to show the code and allow profile selection
+            setInputMode('manual');
         }, 1500);
+    };
+
+    const handleScanNFC = async () => {
+        setScanError(null);
+        if (!isWebNfcSupported()) {
+            setScanError(dAct.nfcUnsupported);
+            return;
+        }
+        setIsScanning(true);
+        try {
+            const token = await readNfcTagOnce();
+            setDeviceId(token);
+            setInputMode('manual');
+        } catch (err) {
+            const kind = classifyNfcFailure(err);
+            if (kind === 'cancelled') setScanError(dAct.nfcCancelled);
+            else setScanError(dAct.nfcReadFailed);
+        } finally {
+            setIsScanning(false);
+        }
     };
 
     const handleLinkDevice = () => {
@@ -59,6 +82,12 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any, 
                                 {dictionary.dashboard.activate.chooseMethod}
                             </Typography>
 
+                            {scanError && (
+                                <Alert severity="warning" onClose={() => setScanError(null)} sx={{ width: '100%' }}>
+                                    {scanError}
+                                </Alert>
+                            )}
+
                             <Box display="flex" gap={2} width="100%">
                                 <Button
                                     variant="outlined"
@@ -67,7 +96,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any, 
                                     fullWidth
                                     startIcon={isScanning ? <CircularProgress size={20} /> : <QrCodeScannerIcon />}
                                     sx={{ py: 3, display: 'flex', flexDirection: 'column', gap: 1 }}
-                                    onClick={() => handleSimulateScan('QR')}
+                                    onClick={handleScanQR}
                                     disabled={isScanning}
                                 >
                                     {dictionary.dashboard.activate.scanQR}
@@ -79,7 +108,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any, 
                                     fullWidth
                                     startIcon={isScanning ? <CircularProgress size={20} /> : <NfcIcon />}
                                     sx={{ py: 3, display: 'flex', flexDirection: 'column', gap: 1 }}
-                                    onClick={() => handleSimulateScan('NFC')}
+                                    onClick={() => void handleScanNFC()}
                                     disabled={isScanning}
                                 >
                                     {dictionary.dashboard.activate.scanNFC}
@@ -119,6 +148,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any, 
                                             size="small"
                                             onClick={() => {
                                                 setDeviceId('');
+                                                setScanError(null);
                                                 setInputMode('automatic');
                                             }}
                                         >

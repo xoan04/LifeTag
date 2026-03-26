@@ -25,6 +25,7 @@ import { DeviceUseCases } from '@/useCases/deviceUseCases';
 import { Profile } from '@/models/profile';
 import { Device } from '@/models/device';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
+import { readNfcTagOnce, isWebNfcSupported, classifyNfcFailure } from '@/lib/nfcWeb';
 
 // ─── Tab panel helper ────────────────────────────────────────────────────────
 
@@ -65,16 +66,39 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     // ── Estado del Escáner (NEXT_PUBLIC_ENABLE_SCANNER: true = QR/NFC, false = solo input) ──
     const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
     const [isScanning, setIsScanning] = useState(false);
+    const [activateScanError, setActivateScanError] = useState<string | null>(null);
 
-    const handleSimulateScan = (type: 'QR' | 'NFC') => {
+    const handleActivateScanQR = () => {
+        setActivateScanError(null);
         setIsScanning(true);
-        // Simulate scanning delay
         setTimeout(() => {
             const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
             setActivateToken(randomId);
             setIsScanning(false);
             setInputMode('manual');
         }, 1500);
+    };
+
+    const handleActivateScanNFC = async () => {
+        setActivateScanError(null);
+        const dAct = dict.dashboard?.activate;
+        if (!isWebNfcSupported()) {
+            setActivateScanError(dAct?.nfcUnsupported ?? 'NFC no disponible en este navegador.');
+            return;
+        }
+        setIsScanning(true);
+        try {
+            const token = await readNfcTagOnce();
+            setActivateToken(token);
+            setActivateType('NFC_TAG');
+            setInputMode('manual');
+        } catch (err) {
+            const kind = classifyNfcFailure(err);
+            if (kind === 'cancelled') setActivateScanError(dAct?.nfcCancelled ?? 'Cancelado.');
+            else setActivateScanError(dAct?.nfcReadFailed ?? 'No se pudo leer el tag.');
+        } finally {
+            setIsScanning(false);
+        }
     };
 
     // ── Dialog: Eliminar perfil ──────────────────────────────────────────────
@@ -438,7 +462,15 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             </Fab>
 
             {/* ═══ Dialog: Activar + vincular device ═══ */}
-            <Dialog open={activateOpen} onClose={() => setActivateOpen(false)} maxWidth="xs" fullWidth>
+            <Dialog
+                open={activateOpen}
+                onClose={() => {
+                    setActivateOpen(false);
+                    setActivateScanError(null);
+                }}
+                maxWidth="xs"
+                fullWidth
+            >
                 <DialogTitle>{dDevices.activate.title}</DialogTitle>
                 <DialogContent>
                     {!activateToken && ENABLE_SCANNER && inputMode === 'automatic' ? (
@@ -446,12 +478,17 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                             <Typography variant="body2" color="text.secondary" textAlign="center">
                                 {dict.dashboard?.activate?.chooseMethod || 'Selecciona un método de escaneo'}
                             </Typography>
+                            {activateScanError && (
+                                <Alert severity="warning" onClose={() => setActivateScanError(null)} sx={{ width: '100%' }}>
+                                    {activateScanError}
+                                </Alert>
+                            )}
                             <Box display="flex" gap={2} width="100%">
                                 <Button
                                     variant="outlined" color="primary" size="large" fullWidth
                                     startIcon={isScanning ? <CircularProgress size={20} /> : <QrCodeScannerIcon />}
                                     sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-                                    onClick={() => handleSimulateScan('QR')}
+                                    onClick={handleActivateScanQR}
                                     disabled={isScanning}
                                 >
                                     {dict.dashboard?.activate?.scanQR || 'QR'}
@@ -460,7 +497,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                     variant="outlined" color="secondary" size="large" fullWidth
                                     startIcon={isScanning ? <CircularProgress size={20} /> : <NfcIcon />}
                                     sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-                                    onClick={() => handleSimulateScan('NFC')}
+                                    onClick={() => void handleActivateScanNFC()}
                                     disabled={isScanning}
                                 >
                                     {dict.dashboard?.activate?.scanNFC || 'NFC'}
@@ -489,6 +526,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                         size="small"
                                         onClick={() => {
                                             setActivateToken('');
+                                            setActivateScanError(null);
                                             setInputMode('automatic');
                                         }}
                                     >
