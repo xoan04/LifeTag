@@ -1,12 +1,17 @@
+import { Device } from '@/models/device';
+
 /**
- * Perfil público de emergencia.
- * Contrato exacto de GET /api/public/emergency-profile/:profileId
- * Nota: no incluye id ni userId — es la vista pública reducida.
+ * Perfil para vista de emergencia.
+ * Contrato actual: GET /api/profiles/:profileId
  */
 export interface EmergencyProfile {
+    id: string;
+    userId: string;
     type: 'HUMAN' | 'PET';
     name: string;
     isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
     // HUMAN
     bloodType: string | null;
     allergies: string[];
@@ -26,17 +31,10 @@ export interface EmergencyProfile {
     ownerPhone: string | null;
     veterinarian_name: string | null;
     veterinarian_phone: string | null;
+    devices?: Device[];
 }
 
 export interface EmergencyProfileParams {
-    /** Token del dispositivo escaneado (opcional, para tracking de escaneos). */
-    deviceToken?: string;
-    /** UUID del perfil, opcional si el backend soporta busqueda por token en la URL */
-    profileId?: string;
-    /** Identificador público que viene de la URL (puede ser Token o UUID) */
+    /** En la URL pública /id/[publicId] ahora esperamos profileId */
     publicId: string;
-    /** Latitud del escaneador (opcional). */
-    lat?: number;
-    /** Longitud del escaneador (opcional). */
-    lng?: number;
 }

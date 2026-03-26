@@ -251,7 +251,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                         {profiles.map(profile => {
                             const isHuman = profile.type === 'HUMAN';
                             const devicesLinked = profile.devices?.length ?? 0;
-                            const firstToken = profile.devices?.[0]?.deviceToken;
+                            const publicProfileId = profile.id;
 
                             return (
                                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={profile.id}>
@@ -309,14 +309,14 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                                     {dProfile.fields.name !== undefined ? 'Editar' : 'Edit'}
                                                 </Button>
                                             </Tooltip>
-                                            {firstToken && (
+                                            {publicProfileId && (
                                                 <Tooltip title="Ver perfil público">
                                                     <Button
                                                         variant="contained"
                                                         color="secondary"
                                                         size="small"
                                                         startIcon={<LaunchIcon />}
-                                                        onClick={() => window.open(`/${lang}/id/${firstToken}`, '_blank')}
+                                                        onClick={() => window.open(`/${lang}/id/${publicProfileId}`, '_blank')}
                                                         fullWidth
                                                     >
                                                         Ver
