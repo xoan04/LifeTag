@@ -1,4 +1,9 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'; // Default fallback
+// En el navegador: solo `/api/...` (mismo origen → sin CORS). Next reenvía al backend vía `src/app/api/[...path]/route.ts`.
+// En servidor (SSR): URL absoluta al API.
+const BASE_URL =
+    typeof window !== 'undefined'
+        ? ''
+        : (process.env.NEXT_PUBLIC_API_URL || 'https://apilifetag.kodelabs.dev').replace(/\/$/, '');
 
 export class HttpClient {
     static async get<T>(url: string, headers: HeadersInit = {}): Promise<T> {
@@ -40,8 +45,15 @@ export class HttpClient {
         try {
             const response = await fetch(fullUrl, options);
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({})) as {
+                    message?: string;
+                    error?: string;
+                };
+                const msg =
+                    errorData.message ||
+                    errorData.error ||
+                    `HTTP error! status: ${response.status}`;
+                throw new Error(msg);
             }
             return await response.json() as T;
         } catch (error) {
