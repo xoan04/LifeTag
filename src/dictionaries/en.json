@@ -249,7 +249,7 @@
         },
         "activate": {
             "title": "Activate LifeTag",
-            "subtitle": "Link a new physical band or tag to one of your profiles.",
+            "subtitle": "Link a physical NFC tag to a profile. The QR for the public page is on each profile card — it is not registered here as a device.",
             "chooseMethod": "Choose a scanning method",
             "chooseActivationType": "How do you want to link?",
             "qrNoScan": "QR codes are only a quick link to the public emergency page — nothing to scan here. Pick a profile and link. On this screen, only NFC tags are scanned.",
@@ -284,6 +284,8 @@
         "medical": "Medical Information",
         "contacts": "Emergency Contacts",
         "devices": "Linked Devices",
+        "publicQrCaption": "Public emergency link (same as View)",
+        "nfcTagsOnly": "NFC tags",
         "save": "Save Changes",
         "fields": {
             "name": "Full Name",

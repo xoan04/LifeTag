@@ -249,7 +249,7 @@
         },
         "activate": {
             "title": "Activar LifeTag",
-            "subtitle": "Enlaza una nueva banda física o placa a uno de tus perfiles.",
+            "subtitle": "Vincula una etiqueta NFC física a un perfil. El código QR de la página pública lo ves en cada tarjeta de perfil; aquí no se registra como dispositivo.",
             "chooseMethod": "Elige un método de escaneo",
             "chooseActivationType": "¿Cómo quieres vincular?",
             "qrNoScan": "El QR solo sirve como enlace rápido a la página pública de emergencia. Aquí no se escanea: elige el perfil y vincula. El escaneo en esta pantalla es solo para etiquetas NFC.",
@@ -284,6 +284,8 @@
         "medical": "Información Médica",
         "contacts": "Contactos de Emergencia",
         "devices": "Dispositivos Vinculados",
+        "publicQrCaption": "Enlace público de emergencia (mismo que «Ver»)",
+        "nfcTagsOnly": "Etiquetas NFC",
         "save": "Guardar Cambios",
         "fields": {
             "name": "Nombre Completo",

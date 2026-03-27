@@ -5,7 +5,6 @@ import {
     Tab, Tabs, CircularProgress, Alert, Snackbar, Stack, Divider,
     IconButton, Tooltip, Dialog, DialogTitle, DialogContent,
     DialogActions, TextField, MenuItem, Select, FormControl, InputLabel,
-    ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -15,7 +14,6 @@ import PetsIcon from '@mui/icons-material/Pets';
 import PersonIcon from '@mui/icons-material/Person';
 import DevicesIcon from '@mui/icons-material/Devices';
 import LinkIcon from '@mui/icons-material/Link';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import NfcIcon from '@mui/icons-material/Nfc';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
@@ -27,6 +25,7 @@ import { Profile } from '@/models/profile';
 import { Device } from '@/models/device';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
 import { readNfcTagOnce, isWebNfcSupported, isAppleMobileWeb, classifyNfcFailure } from '@/lib/nfcWeb';
+import { ProfilePublicQr } from '@/components/ProfilePublicQr';
 
 // ─── Tab panel helper ────────────────────────────────────────────────────────
 
@@ -60,8 +59,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     // ── Dialog: Activar dispositivo ──────────────────────────────────────────
     const [activateOpen, setActivateOpen] = useState(false);
     const [activateToken, setActivateToken] = useState('');
-    /** QR = enlace público automático; NFC = token físico de la etiqueta */
-    const [linkMode, setLinkMode] = useState<'qr' | 'nfc'>('qr');
     const [activateProfileId, setActivateProfileId] = useState('');
     const [activating, setActivating] = useState(false);
 
@@ -157,32 +154,14 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
 
     // ── Activar + vincular device ─────────────────────────────────────────────
     const handleActivate = async () => {
-        if (!activateProfileId) return;
-        if (linkMode === 'nfc' && !activateToken.trim()) return;
+        if (!activateProfileId || !activateToken.trim()) return;
         setActivating(true);
         try {
-            if (linkMode === 'qr') {
-                const token =
-                    typeof crypto !== 'undefined' && crypto.randomUUID
-                        ? `QR-${crypto.randomUUID().replace(/-/g, '').slice(0, 20).toUpperCase()}`
-                        : `QR-${Date.now().toString(36).toUpperCase()}`;
-                await DeviceUseCases.registerAndActivate(token, 'QR_TAG', activateProfileId);
-                const publicUrl =
-                    typeof window !== 'undefined'
-                        ? `${window.location.origin}/${lang}/id/${activateProfileId}`
-                        : '';
-                showToast(
-                    'success',
-                    `${dDevices.activate.successToast} ${dDevices.activate.publicPage}: ${publicUrl}`
-                );
-            } else {
-                await DeviceUseCases.registerAndActivate(activateToken.trim(), 'NFC_TAG', activateProfileId);
-                showToast('success', dDevices.activate.successToast);
-            }
+            await DeviceUseCases.registerAndActivate(activateToken.trim(), 'NFC_TAG', activateProfileId);
+            showToast('success', dDevices.activate.successToast);
             setActivateOpen(false);
             setActivateToken('');
             setActivateProfileId('');
-            setLinkMode('qr');
             setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
             loadDevices();
             loadProfiles();
@@ -230,6 +209,8 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             setReportingLost(false);
         }
     };
+
+    const nfcDevicesOnly = devices.filter((d) => d.deviceType !== 'QR_TAG');
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
@@ -289,7 +270,8 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     <Grid container spacing={3}>
                         {profiles.map(profile => {
                             const isHuman = profile.type === 'HUMAN';
-                            const devicesLinked = profile.devices?.length ?? 0;
+                            const nfcLinked =
+                                profile.devices?.filter((d) => d.deviceType === 'NFC_TAG').length ?? 0;
                             const publicProfileId = profile.id;
 
                             return (
@@ -329,9 +311,19 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
 
                                             <Divider sx={{ my: 1.5 }} />
 
-                                            {/* ── dispositivos ── */}
+                                            <Box display="flex" flexDirection="column" alignItems="center" mb={1.5}>
+                                                <ProfilePublicQr
+                                                    profileId={profile.id}
+                                                    lang={lang}
+                                                    caption={dProfile.publicQrCaption}
+                                                />
+                                            </Box>
+
+                                            <Divider sx={{ my: 1.5 }} />
+
+                                            {/* ── solo etiquetas NFC físicas ── */}
                                             <Typography variant="caption" color="text.secondary">
-                                                {dProfile.devices}: <strong>{devicesLinked}</strong>
+                                                {dProfile.nfcTagsOnly}: <strong>{nfcLinked}</strong>
                                             </Typography>
                                         </CardContent>
 
@@ -384,7 +376,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             <TabPanel value={tab} index={1}>
                 {loadingDevices ? (
                     <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>
-                ) : devices.length === 0 ? (
+                ) : nfcDevicesOnly.length === 0 ? (
                     <Box textAlign="center" py={8}>
                         <DevicesIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
                         <Typography color="text.secondary" mb={2}>{dDevices.empty}</Typography>
@@ -394,13 +386,13 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     </Box>
                 ) : (
                     <Stack spacing={2}>
-                        {devices.map(device => (
+                        {nfcDevicesOnly.map(device => (
                             <Card variant="outlined" key={device.id} sx={{ transition: 'box-shadow .2s', '&:hover': { boxShadow: 3 } }}>
                                 <CardContent>
                                     <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
                                         {/* ── Info izquierda ── */}
                                         <Box display="flex" alignItems="center" gap={1.5}>
-                                            <QrCodeScannerIcon color="action" />
+                                            <NfcIcon color="action" />
                                             <Box>
                                                 <Typography fontWeight={700}>{device.deviceToken}</Typography>
                                                 <Typography variant="caption" color="text.secondary">
@@ -483,7 +475,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     setActivateOpen(false);
                     setActivateScanError(null);
                     setActivateToken('');
-                    setLinkMode('qr');
                     setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
                 }}
                 maxWidth="xs"
@@ -492,49 +483,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                 <DialogTitle>{dDevices.activate.title}</DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} mt={1}>
-                        <ToggleButtonGroup
-                            exclusive
-                            fullWidth
-                            value={linkMode}
-                            onChange={(_, v) => {
-                                if (v != null) {
-                                    setLinkMode(v);
-                                    setActivateToken('');
-                                    setActivateScanError(null);
-                                    setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
-                                }
-                            }}
-                            color="primary"
-                            size="small"
-                        >
-                            <ToggleButton value="qr">{dDevices.activate.linkModeQr}</ToggleButton>
-                            <ToggleButton value="nfc">{dDevices.activate.linkModeNfc}</ToggleButton>
-                        </ToggleButtonGroup>
-
-                        {linkMode === 'qr' && (
-                            <>
-                                <Alert severity="info">{dDevices.activate.qrHint}</Alert>
-                                <FormControl fullWidth>
-                                    <InputLabel>{dDevices.activate.profileLabel}</InputLabel>
-                                    <Select
-                                        value={activateProfileId}
-                                        label={dDevices.activate.profileLabel}
-                                        onChange={e => setActivateProfileId(e.target.value)}
-                                        disabled={loadingProfiles || profiles.length === 0}
-                                    >
-                                        {profiles.map(p => (
-                                            <MenuItem key={p.id} value={p.id}>
-                                                {p.type === 'HUMAN' ? '👤' : '🐾'} {p.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </>
-                        )}
-
-                        {linkMode === 'nfc' && (
-                            <>
-                                <Alert severity="info">{dDevices.activate.nfcHint}</Alert>
+                        <Alert severity="info">{dDevices.activate.nfcHint}</Alert>
                                 {!activateToken && ENABLE_SCANNER && inputMode === 'automatic' ? (
                                     <Box display="flex" flexDirection="column" alignItems="center" gap={2} pt={1}>
                                         {isAppleMobileWeb() && dict.dashboard?.activate?.nfcUnsupportedApple && (
@@ -616,8 +565,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                         </FormControl>
                                     </Stack>
                                 )}
-                            </>
-                        )}
                     </Stack>
                 </DialogContent>
                 <DialogActions>
@@ -626,7 +573,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                             setActivateOpen(false);
                             setActivateScanError(null);
                             setActivateToken('');
-                            setLinkMode('qr');
                             setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
                         }}
                         color="inherit"
@@ -640,7 +586,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                             activating ||
                             !activateProfileId ||
                             profiles.length === 0 ||
-                            (linkMode === 'nfc' && !activateToken.trim())
+                            !activateToken.trim()
                         }
                     >
                         {activating ? <CircularProgress size={22} /> : dDevices.activate.submit}
