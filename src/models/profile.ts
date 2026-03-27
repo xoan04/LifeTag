@@ -56,12 +56,13 @@ export interface PetProfile extends ProfileBase {
     allergies: [];
     medicalConditions: [];
     medications: [];
-    emergencyContact1_name: null;
-    emergencyContact1_phone: null;
-    emergencyContact1_relation: null;
-    emergencyContact2_name: null;
-    emergencyContact2_phone: null;
-    emergencyContact2_relation: null;
+    /** Opcional: contactos de emergencia (mismos campos que HUMAN; valores desde API) */
+    emergencyContact1_name: string | null;
+    emergencyContact1_phone: string | null;
+    emergencyContact1_relation: string | null;
+    emergencyContact2_name: string | null;
+    emergencyContact2_phone: string | null;
+    emergencyContact2_relation: string | null;
 }
 
 /** Discriminated union — usa type narrowing con profile.type */
@@ -96,6 +97,12 @@ export interface CreatePetProfileRequest {
     ownerPhone?: string;
     veterinarian_name?: string;
     veterinarian_phone?: string;
+    emergencyContact1_name?: string;
+    emergencyContact1_phone?: string;
+    emergencyContact1_relation?: string;
+    emergencyContact2_name?: string;
+    emergencyContact2_phone?: string;
+    emergencyContact2_relation?: string;
 }
 
 export type CreateProfileRequest = CreateHumanProfileRequest | CreatePetProfileRequest;

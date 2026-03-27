@@ -251,6 +251,9 @@
             "title": "Activar LifeTag",
             "subtitle": "Enlaza una nueva banda física o placa a uno de tus perfiles.",
             "chooseMethod": "Elige un método de escaneo",
+            "chooseActivationType": "¿Cómo quieres vincular?",
+            "qrNoScan": "El QR solo sirve como enlace rápido a la página pública de emergencia. Aquí no se escanea: elige el perfil y vincula. El escaneo en esta pantalla es solo para etiquetas NFC.",
+            "publicLinkPreview": "Enlace público (para imprimir o compartir)",
             "scanQR": "Escanear QR",
             "scanNFC": "Escanear NFC",
             "enterCode": "Ingresar Código Manualmente",
@@ -289,7 +292,25 @@
             "allergies": "Alergias",
             "medications": "Medicamentos",
             "conditions": "Condiciones Médicas",
-            "notes": "Notas Adicionales"
+            "notes": "Notas Adicionales",
+            "contactName": "Nombre",
+            "contactPhone": "Teléfono",
+            "relation": "Parentesco"
+        },
+        "emergencyRelations": {
+            "human": {
+                "mother": "Madre",
+                "father": "Padre",
+                "brother": "Hermano",
+                "son": "Hijo",
+                "daughter": "Hija",
+                "grandfather": "Abuelo",
+                "grandmother": "Abuela"
+            },
+            "pet": {
+                "owner_m": "Dueño",
+                "owner_f": "Dueña"
+            }
         }
     },
     "emergency": {
@@ -382,6 +403,11 @@
             "title": "Activar y vincular",
             "profileLabel": "Selecciona el perfil",
             "submit": "Vincular a perfil",
+            "linkModeQr": "QR (enlace público)",
+            "linkModeNfc": "NFC (etiqueta física)",
+            "qrHint": "Se creará un dispositivo QR vinculado al perfil. El código escaneable debe apuntar a la página pública de emergencia (mismo enlace que verás al guardar).",
+            "nfcHint": "Introduce el ID de la etiqueta o escanéala con el móvil. Es el identificador físico del chip, no el enlace web.",
+            "publicPage": "Página pública",
             "successToast": "¡Dispositivo activado y vinculado correctamente!",
             "errorNotFound": "Dispositivo no encontrado. Verifica el token.",
             "errorAlreadyActive": "Este dispositivo ya está vinculado a un perfil.",

@@ -251,6 +251,9 @@
             "title": "Activate LifeTag",
             "subtitle": "Link a new physical band or tag to one of your profiles.",
             "chooseMethod": "Choose a scanning method",
+            "chooseActivationType": "How do you want to link?",
+            "qrNoScan": "QR codes are only a quick link to the public emergency page — nothing to scan here. Pick a profile and link. On this screen, only NFC tags are scanned.",
+            "publicLinkPreview": "Public link (to print or share)",
             "scanQR": "Scan QR",
             "scanNFC": "Scan NFC",
             "enterCode": "Enter Code Manually",
@@ -289,7 +292,25 @@
             "allergies": "Allergies",
             "medications": "Medications",
             "conditions": "Medical Conditions",
-            "notes": "Additional Notes"
+            "notes": "Additional Notes",
+            "contactName": "Name",
+            "contactPhone": "Phone",
+            "relation": "Relation"
+        },
+        "emergencyRelations": {
+            "human": {
+                "mother": "Mother",
+                "father": "Father",
+                "brother": "Brother",
+                "son": "Son",
+                "daughter": "Daughter",
+                "grandfather": "Grandfather",
+                "grandmother": "Grandmother"
+            },
+            "pet": {
+                "owner_m": "Owner (male)",
+                "owner_f": "Owner (female)"
+            }
         }
     },
     "emergency": {
@@ -382,6 +403,11 @@
             "title": "Activate & link",
             "profileLabel": "Select a profile",
             "submit": "Link to profile",
+            "linkModeQr": "QR (public link)",
+            "linkModeNfc": "NFC (physical tag)",
+            "qrHint": "A QR device will be linked to the profile. The scannable code should point to the public emergency page (same link shown after saving).",
+            "nfcHint": "Enter the ID printed on the tag or scan it with your phone. This is the physical chip ID, not the web link.",
+            "publicPage": "Public page",
             "successToast": "Device activated and linked successfully!",
             "errorNotFound": "Device not found. Please check the token.",
             "errorAlreadyActive": "This device is already linked to a profile.",

@@ -26,6 +26,10 @@ function translateRelation(relation: string | null, lang: string): string {
         daughter: 'Hija',
         friend: 'Amigo(a)',
         partner: 'Pareja',
+        grandfather: 'Abuelo',
+        grandmother: 'Abuela',
+        owner_m: 'Dueño',
+        owner_f: 'Dueña',
     };
     const mapEn: Record<string, string> = {
         wife: 'Wife',
@@ -38,6 +42,10 @@ function translateRelation(relation: string | null, lang: string): string {
         daughter: 'Daughter',
         friend: 'Friend',
         partner: 'Partner',
+        grandfather: 'Grandfather',
+        grandmother: 'Grandmother',
+        owner_m: 'Owner',
+        owner_f: 'Owner',
     };
     return (lang === 'es' ? mapEs[key] : mapEn[key]) ?? relation;
 }

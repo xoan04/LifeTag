@@ -15,6 +15,14 @@ export class ProfileService {
     }
 
     /**
+     * Obtiene un perfil por id (mismo identificador que en la URL pública /id/[publicId]).
+     * GET /api/profiles/:profileId
+     */
+    static async getProfile(profileId: string): Promise<Profile> {
+        return HttpClient.get<Profile>(`/api/profiles/${profileId}`);
+    }
+
+    /**
      * Crea un perfil nuevo (HUMAN o PET).
      * POST /api/profiles
      */

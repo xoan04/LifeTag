@@ -16,6 +16,13 @@ export class ProfileUseCases {
     }
 
     /**
+     * Obtiene un perfil por id.
+     */
+    static async getProfile(profileId: string): Promise<Profile> {
+        return ProfileService.getProfile(profileId);
+    }
+
+    /**
      * Crea un perfil nuevo verificando los límites del plan antes de llamar a la API.
      * El backend también valida — esta comprobación local mejora la UX evitando el round-trip.
      *

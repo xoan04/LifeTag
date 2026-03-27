@@ -5,6 +5,7 @@ import {
     Tab, Tabs, CircularProgress, Alert, Snackbar, Stack, Divider,
     IconButton, Tooltip, Dialog, DialogTitle, DialogContent,
     DialogActions, TextField, MenuItem, Select, FormControl, InputLabel,
+    ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -12,9 +13,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LaunchIcon from '@mui/icons-material/Launch';
 import PetsIcon from '@mui/icons-material/Pets';
 import PersonIcon from '@mui/icons-material/Person';
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import DevicesIcon from '@mui/icons-material/Devices';
 import LinkIcon from '@mui/icons-material/Link';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import NfcIcon from '@mui/icons-material/Nfc';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
@@ -59,25 +60,15 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     // ── Dialog: Activar dispositivo ──────────────────────────────────────────
     const [activateOpen, setActivateOpen] = useState(false);
     const [activateToken, setActivateToken] = useState('');
-    const [activateType, setActivateType] = useState<'QR_TAG' | 'NFC_TAG'>('QR_TAG');
+    /** QR = enlace público automático; NFC = token físico de la etiqueta */
+    const [linkMode, setLinkMode] = useState<'qr' | 'nfc'>('qr');
     const [activateProfileId, setActivateProfileId] = useState('');
     const [activating, setActivating] = useState(false);
 
-    // ── Estado del Escáner (NEXT_PUBLIC_ENABLE_SCANNER: true = QR/NFC, false = solo input) ──
+    // ── Estado del Escáner (solo NFC; el QR no se “asigna” como la etiqueta física) ──
     const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
     const [isScanning, setIsScanning] = useState(false);
     const [activateScanError, setActivateScanError] = useState<string | null>(null);
-
-    const handleActivateScanQR = () => {
-        setActivateScanError(null);
-        setIsScanning(true);
-        setTimeout(() => {
-            const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-            setActivateToken(randomId);
-            setIsScanning(false);
-            setInputMode('manual');
-        }, 1500);
-    };
 
     const handleActivateScanNFC = async () => {
         setActivateScanError(null);
@@ -96,7 +87,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         try {
             const token = await readNfcTagOnce();
             setActivateToken(token);
-            setActivateType('NFC_TAG');
             setInputMode('manual');
         } catch (err) {
             const kind = classifyNfcFailure(err);
@@ -167,14 +157,33 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
 
     // ── Activar + vincular device ─────────────────────────────────────────────
     const handleActivate = async () => {
-        if (!activateToken || !activateProfileId) return;
+        if (!activateProfileId) return;
+        if (linkMode === 'nfc' && !activateToken.trim()) return;
         setActivating(true);
         try {
-            await DeviceUseCases.registerAndActivate(activateToken, activateType, activateProfileId);
-            showToast('success', dDevices.activate.successToast);
+            if (linkMode === 'qr') {
+                const token =
+                    typeof crypto !== 'undefined' && crypto.randomUUID
+                        ? `QR-${crypto.randomUUID().replace(/-/g, '').slice(0, 20).toUpperCase()}`
+                        : `QR-${Date.now().toString(36).toUpperCase()}`;
+                await DeviceUseCases.registerAndActivate(token, 'QR_TAG', activateProfileId);
+                const publicUrl =
+                    typeof window !== 'undefined'
+                        ? `${window.location.origin}/${lang}/id/${activateProfileId}`
+                        : '';
+                showToast(
+                    'success',
+                    `${dDevices.activate.successToast} ${dDevices.activate.publicPage}: ${publicUrl}`
+                );
+            } else {
+                await DeviceUseCases.registerAndActivate(activateToken.trim(), 'NFC_TAG', activateProfileId);
+                showToast('success', dDevices.activate.successToast);
+            }
             setActivateOpen(false);
             setActivateToken('');
             setActivateProfileId('');
+            setLinkMode('qr');
+            setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
             loadDevices();
             loadProfiles();
         } catch (err) {
@@ -473,122 +482,166 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                 onClose={() => {
                     setActivateOpen(false);
                     setActivateScanError(null);
+                    setActivateToken('');
+                    setLinkMode('qr');
+                    setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
                 }}
                 maxWidth="xs"
                 fullWidth
             >
                 <DialogTitle>{dDevices.activate.title}</DialogTitle>
                 <DialogContent>
-                    {!activateToken && ENABLE_SCANNER && inputMode === 'automatic' ? (
-                        <Box display="flex" flexDirection="column" alignItems="center" gap={3} pt={2}>
-                            <Typography variant="body2" color="text.secondary" textAlign="center">
-                                {dict.dashboard?.activate?.chooseMethod || 'Selecciona un método de escaneo'}
-                            </Typography>
-                            {isAppleMobileWeb() && dict.dashboard?.activate?.nfcUnsupportedApple && (
-                                <Alert severity="info" sx={{ width: '100%' }}>
-                                    {dict.dashboard?.activate?.nfcUnsupportedApple}
-                                </Alert>
-                            )}
-                            {activateScanError && (
-                                <Alert severity="warning" onClose={() => setActivateScanError(null)} sx={{ width: '100%' }}>
-                                    {activateScanError}
-                                </Alert>
-                            )}
-                            <Box display="flex" gap={2} width="100%">
-                                <Button
-                                    variant="outlined" color="primary" size="large" fullWidth
-                                    startIcon={isScanning ? <CircularProgress size={20} /> : <QrCodeScannerIcon />}
-                                    sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-                                    onClick={handleActivateScanQR}
-                                    disabled={isScanning}
-                                >
-                                    {dict.dashboard?.activate?.scanQR || 'QR'}
-                                </Button>
-                                <Button
-                                    variant="outlined" color="secondary" size="large" fullWidth
-                                    startIcon={isScanning ? <CircularProgress size={20} /> : <NfcIcon />}
-                                    sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
-                                    onClick={() => void handleActivateScanNFC()}
-                                    disabled={isScanning || !isWebNfcSupported()}
-                                    title={
-                                        !isWebNfcSupported()
-                                            ? isAppleMobileWeb()
-                                                ? dict.dashboard?.activate?.nfcUnsupportedApple
-                                                : dict.dashboard?.activate?.nfcUnsupported
-                                            : undefined
-                                    }
-                                >
-                                    {dict.dashboard?.activate?.scanNFC || 'NFC'}
-                                </Button>
-                            </Box>
-                            <Button
-                                variant="text" startIcon={<KeyboardIcon />} disabled={isScanning}
-                                onClick={() => setInputMode('manual')}
-                            >
-                                {dict.dashboard?.activate?.enterCode || 'Ingresar código manualmente'}
-                            </Button>
-                        </Box>
-                    ) : (
-                        <Stack spacing={3} mt={1}>
-                            <TextField
-                                label={dDevices.register.tokenLabel}
-                                placeholder={dDevices.register.tokenPlaceholder}
-                                value={activateToken}
-                                onChange={e => setActivateToken(e.target.value.toUpperCase())}
-                                fullWidth
-                                autoFocus
-                            />
-                            {ENABLE_SCANNER && (
-                                <Box display="flex" justifyContent="flex-end" mt={-2}>
-                                    <Button
-                                        size="small"
-                                        onClick={() => {
-                                            setActivateToken('');
-                                            setActivateScanError(null);
-                                            setInputMode('automatic');
-                                        }}
+                    <Stack spacing={2} mt={1}>
+                        <ToggleButtonGroup
+                            exclusive
+                            fullWidth
+                            value={linkMode}
+                            onChange={(_, v) => {
+                                if (v != null) {
+                                    setLinkMode(v);
+                                    setActivateToken('');
+                                    setActivateScanError(null);
+                                    setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
+                                }
+                            }}
+                            color="primary"
+                            size="small"
+                        >
+                            <ToggleButton value="qr">{dDevices.activate.linkModeQr}</ToggleButton>
+                            <ToggleButton value="nfc">{dDevices.activate.linkModeNfc}</ToggleButton>
+                        </ToggleButtonGroup>
+
+                        {linkMode === 'qr' && (
+                            <>
+                                <Alert severity="info">{dDevices.activate.qrHint}</Alert>
+                                <FormControl fullWidth>
+                                    <InputLabel>{dDevices.activate.profileLabel}</InputLabel>
+                                    <Select
+                                        value={activateProfileId}
+                                        label={dDevices.activate.profileLabel}
+                                        onChange={e => setActivateProfileId(e.target.value)}
+                                        disabled={loadingProfiles || profiles.length === 0}
                                     >
-                                        {dict.dashboard?.activate?.retryScanner ?? 'Reintentar escáner'}
-                                    </Button>
-                                </Box>
-                            )}
-                            <FormControl fullWidth>
-                                <InputLabel>{dDevices.register.typeLabel}</InputLabel>
-                                <Select
-                                    value={activateType}
-                                    label={dDevices.register.typeLabel}
-                                    onChange={e => setActivateType(e.target.value as 'QR_TAG' | 'NFC_TAG')}
-                                >
-                                    <MenuItem value="QR_TAG">{dDevices.type.QR_TAG}</MenuItem>
-                                    <MenuItem value="NFC_TAG">{dDevices.type.NFC_TAG}</MenuItem>
-                                </Select>
-                            </FormControl>
-                            <FormControl fullWidth>
-                                <InputLabel>{dDevices.activate.profileLabel}</InputLabel>
-                                <Select
-                                    value={activateProfileId}
-                                    label={dDevices.activate.profileLabel}
-                                    onChange={e => setActivateProfileId(e.target.value)}
-                                    disabled={loadingProfiles || profiles.length === 0}
-                                >
-                                    {profiles.map(p => (
-                                        <MenuItem key={p.id} value={p.id}>
-                                            {p.type === 'HUMAN' ? '👤' : '🐾'} {p.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Stack>
-                    )}
+                                        {profiles.map(p => (
+                                            <MenuItem key={p.id} value={p.id}>
+                                                {p.type === 'HUMAN' ? '👤' : '🐾'} {p.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </>
+                        )}
+
+                        {linkMode === 'nfc' && (
+                            <>
+                                <Alert severity="info">{dDevices.activate.nfcHint}</Alert>
+                                {!activateToken && ENABLE_SCANNER && inputMode === 'automatic' ? (
+                                    <Box display="flex" flexDirection="column" alignItems="center" gap={2} pt={1}>
+                                        {isAppleMobileWeb() && dict.dashboard?.activate?.nfcUnsupportedApple && (
+                                            <Alert severity="info" sx={{ width: '100%' }}>
+                                                {dict.dashboard?.activate?.nfcUnsupportedApple}
+                                            </Alert>
+                                        )}
+                                        {activateScanError && (
+                                            <Alert severity="warning" onClose={() => setActivateScanError(null)} sx={{ width: '100%' }}>
+                                                {activateScanError}
+                                            </Alert>
+                                        )}
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            size="large"
+                                            fullWidth
+                                            startIcon={isScanning ? <CircularProgress size={20} /> : <NfcIcon />}
+                                            sx={{ py: 2 }}
+                                            onClick={() => void handleActivateScanNFC()}
+                                            disabled={isScanning || !isWebNfcSupported()}
+                                            title={
+                                                !isWebNfcSupported()
+                                                    ? isAppleMobileWeb()
+                                                        ? dict.dashboard?.activate?.nfcUnsupportedApple
+                                                        : dict.dashboard?.activate?.nfcUnsupported
+                                                    : undefined
+                                            }
+                                        >
+                                            {dict.dashboard?.activate?.scanNFC || 'NFC'}
+                                        </Button>
+                                        <Button
+                                            variant="text"
+                                            startIcon={<KeyboardIcon />}
+                                            disabled={isScanning}
+                                            onClick={() => setInputMode('manual')}
+                                        >
+                                            {dict.dashboard?.activate?.enterCode || 'Ingresar código manualmente'}
+                                        </Button>
+                                    </Box>
+                                ) : (
+                                    <Stack spacing={2}>
+                                        <TextField
+                                            label={dDevices.register.tokenLabel}
+                                            placeholder={dDevices.register.tokenPlaceholder}
+                                            value={activateToken}
+                                            onChange={e => setActivateToken(e.target.value.toUpperCase())}
+                                            fullWidth
+                                            autoFocus
+                                        />
+                                        {ENABLE_SCANNER && (
+                                            <Box display="flex" justifyContent="flex-end">
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => {
+                                                        setActivateToken('');
+                                                        setActivateScanError(null);
+                                                        setInputMode('automatic');
+                                                    }}
+                                                >
+                                                    {dict.dashboard?.activate?.retryScanner ?? 'Reintentar escáner'}
+                                                </Button>
+                                            </Box>
+                                        )}
+                                        <FormControl fullWidth>
+                                            <InputLabel>{dDevices.activate.profileLabel}</InputLabel>
+                                            <Select
+                                                value={activateProfileId}
+                                                label={dDevices.activate.profileLabel}
+                                                onChange={e => setActivateProfileId(e.target.value)}
+                                                disabled={loadingProfiles || profiles.length === 0}
+                                            >
+                                                {profiles.map(p => (
+                                                    <MenuItem key={p.id} value={p.id}>
+                                                        {p.type === 'HUMAN' ? '👤' : '🐾'} {p.name}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Stack>
+                                )}
+                            </>
+                        )}
+                    </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setActivateOpen(false)} color="inherit">
+                    <Button
+                        onClick={() => {
+                            setActivateOpen(false);
+                            setActivateScanError(null);
+                            setActivateToken('');
+                            setLinkMode('qr');
+                            setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
+                        }}
+                        color="inherit"
+                    >
                         {dict.account.profile.cancel}
                     </Button>
                     <Button
                         variant="contained"
                         onClick={handleActivate}
-                        disabled={activating || !activateToken || !activateProfileId}
+                        disabled={
+                            activating ||
+                            !activateProfileId ||
+                            profiles.length === 0 ||
+                            (linkMode === 'nfc' && !activateToken.trim())
+                        }
                     >
                         {activating ? <CircularProgress size={22} /> : dDevices.activate.submit}
                     </Button>
