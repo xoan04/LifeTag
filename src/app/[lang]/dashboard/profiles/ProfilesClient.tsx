@@ -25,7 +25,7 @@ import { DeviceUseCases } from '@/useCases/deviceUseCases';
 import { Profile } from '@/models/profile';
 import { Device } from '@/models/device';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
-import { readNfcTagOnce, isWebNfcSupported, classifyNfcFailure } from '@/lib/nfcWeb';
+import { readNfcTagOnce, isWebNfcSupported, isAppleMobileWeb, classifyNfcFailure } from '@/lib/nfcWeb';
 
 // ─── Tab panel helper ────────────────────────────────────────────────────────
 
@@ -83,7 +83,13 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         setActivateScanError(null);
         const dAct = dict.dashboard?.activate;
         if (!isWebNfcSupported()) {
-            setActivateScanError(dAct?.nfcUnsupported ?? 'NFC no disponible en este navegador.');
+            const msg =
+                isAppleMobileWeb()
+                    ? dAct?.nfcUnsupportedApple
+                    : dAct?.nfcUnsupported;
+            setActivateScanError(
+                msg ?? 'NFC no disponible en este navegador.'
+            );
             return;
         }
         setIsScanning(true);
@@ -478,6 +484,11 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                             <Typography variant="body2" color="text.secondary" textAlign="center">
                                 {dict.dashboard?.activate?.chooseMethod || 'Selecciona un método de escaneo'}
                             </Typography>
+                            {isAppleMobileWeb() && dict.dashboard?.activate?.nfcUnsupportedApple && (
+                                <Alert severity="info" sx={{ width: '100%' }}>
+                                    {dict.dashboard?.activate?.nfcUnsupportedApple}
+                                </Alert>
+                            )}
                             {activateScanError && (
                                 <Alert severity="warning" onClose={() => setActivateScanError(null)} sx={{ width: '100%' }}>
                                     {activateScanError}
@@ -498,7 +509,14 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                     startIcon={isScanning ? <CircularProgress size={20} /> : <NfcIcon />}
                                     sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
                                     onClick={() => void handleActivateScanNFC()}
-                                    disabled={isScanning}
+                                    disabled={isScanning || !isWebNfcSupported()}
+                                    title={
+                                        !isWebNfcSupported()
+                                            ? isAppleMobileWeb()
+                                                ? dict.dashboard?.activate?.nfcUnsupportedApple
+                                                : dict.dashboard?.activate?.nfcUnsupported
+                                            : undefined
+                                    }
                                 >
                                     {dict.dashboard?.activate?.scanNFC || 'NFC'}
                                 </Button>

@@ -267,8 +267,11 @@
             "human": "Human",
             "pet": "Pet",
             "nfcUnsupported": "Your browser does not support Web NFC. Use Chrome on an Android phone with NFC enabled.",
+            "nfcUnsupportedApple": "On iPhone and iPad, browsers (including Chrome) cannot read NFC from the web. Enter the device code manually or use an Android phone with Chrome.",
             "nfcCancelled": "NFC scan was cancelled.",
-            "nfcReadFailed": "Could not read the tag. Hold it near the phone and try again."
+            "nfcReadFailed": "Could not read the tag. Hold it near the phone and try again.",
+            "noProfiles": "You don't have any profiles yet. Create one with option B or from Profiles.",
+            "deviceTypeLabel": "Device type"
         }
     },
     "profile": {

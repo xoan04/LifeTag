@@ -52,6 +52,19 @@ export function isWebNfcSupported(): boolean {
     return typeof window !== 'undefined' && 'NDEFReader' in window;
 }
 
+/**
+ * iPhone / iPad (incl. Chrome y Safari): Apple no expone Web NFC en el navegador.
+ * Chrome en iOS usa el mismo motor que Safari (WebKit), no el de Android.
+ */
+export function isAppleMobileWeb(): boolean {
+    if (typeof window === 'undefined') return false;
+    const ua = window.navigator.userAgent;
+    const iOS = /iPad|iPhone|iPod/.test(ua);
+    const iPadOS =
+        !iOS && /iPad|Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+    return iOS || iPadOS;
+}
+
 /** UID del chip en hex sin dos puntos (p. ej. 041A2B3C4D). */
 export function normalizeNfcUid(serial: string): string {
     return serial.replace(/:/g, '').toUpperCase();
