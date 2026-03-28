@@ -1,43 +1,34 @@
+import { HttpClient } from '@/lib/httpClient';
 import {
     mapPublicProfileApiToEmergencyProfile,
     type PublicProfileApiResponse,
 } from '@/models/publicProfileApi';
 import type { EmergencyProfile } from '@/models/emergencyProfile';
 
-function getPublicProfileApiBase(): string {
-    const raw =
-        process.env.NEXT_PUBLIC_PUBLIC_PROFILE_API_BASE || 'https://life-tag-mu.vercel.app';
-    return raw.replace(/\/$/, '');
-}
+/** Evita dos GET al mismo id cuando React Strict Mode ejecuta el efecto dos veces. */
+const inflightByProfileId = new Map<string, Promise<EmergencyProfile>>();
 
 /**
- * Cliente HTTP para el perfil público (sin Authorization).
- * GET {base}/api/profiles/:publicId
+ * Perfil de emergencia público.
+ * En cliente: GET /api/public/emergency-profile/:profileId (visible en Red; proxy → NEXT_PUBLIC_API_URL).
  */
 export class PublicProfileService {
-    static async getByPublicId(publicId: string): Promise<EmergencyProfile> {
-        const base = getPublicProfileApiBase();
-        const url = `${base}/api/profiles/${encodeURIComponent(publicId)}`;
+    static getByPublicId(profileId: string): Promise<EmergencyProfile> {
+        const existing = inflightByProfileId.get(profileId);
+        if (existing) return existing;
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: { Accept: 'application/json' },
-            cache: 'no-store',
-        });
+        const promise = (async () => {
+            try {
+                const dto = await HttpClient.get<PublicProfileApiResponse>(
+                    `/api/public/emergency-profile/${encodeURIComponent(profileId)}`,
+                );
+                return mapPublicProfileApiToEmergencyProfile(dto, profileId);
+            } finally {
+                inflightByProfileId.delete(profileId);
+            }
+        })();
 
-        if (!response.ok) {
-            const body = (await response.json().catch(() => ({}))) as {
-                message?: string;
-                error?: string;
-            };
-            const msg =
-                body.message ||
-                body.error ||
-                `HTTP error! status: ${response.status}`;
-            throw new Error(msg);
-        }
-
-        const dto = (await response.json()) as PublicProfileApiResponse;
-        return mapPublicProfileApiToEmergencyProfile(dto, publicId);
+        inflightByProfileId.set(profileId, promise);
+        return promise;
     }
 }

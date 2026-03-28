@@ -1,7 +1,7 @@
 import type { EmergencyProfile } from '@/models/emergencyProfile';
 
 /**
- * Respuesta cruda de GET /api/profiles/:id (API pública LifeTag).
+ * Respuesta cruda de GET /api/public/emergency-profile/:profileId (backend LifeTag).
  */
 export interface PublicProfileApiResponse {
     type: 'HUMAN' | 'PET';

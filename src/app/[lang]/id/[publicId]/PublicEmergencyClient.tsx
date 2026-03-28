@@ -11,8 +11,8 @@ import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import { motion } from 'framer-motion';
-import { PublicProfileUseCases } from '@/useCases/publicProfileUseCases';
 import { EmergencyProfile } from '@/models/emergencyProfile';
+import { PublicProfileUseCases } from '@/useCases/publicProfileUseCases';
 
 type LoadError = 'not_found' | 'inactive' | 'lost' | 'generic' | null;
 
@@ -348,11 +348,11 @@ function MedicalInfo({ profile, d }: { profile: EmergencyProfile; d: any }) {
 export default function PublicEmergencyClient({
     dictionary,
     lang,
-    params,
+    publicId,
 }: {
     dictionary: any;
     lang: string;
-    params: { publicId: string };
+    publicId: string;
 }) {
     const d = dictionary.emergency;
     const [profile, setProfile] = useState<EmergencyProfile | null>(null);
@@ -360,8 +360,14 @@ export default function PublicEmergencyClient({
     const [error, setError] = useState<LoadError>(null);
 
     useEffect(() => {
-        PublicProfileUseCases.getPublicEmergencyProfile({ publicId: params.publicId })
+        let cancelled = false;
+        setLoading(true);
+        setError(null);
+        setProfile(null);
+
+        PublicProfileUseCases.getPublicEmergencyProfile({ publicId })
             .then((data) => {
+                if (cancelled) return;
                 if (!data.isActive) {
                     setError('inactive');
                 } else {
@@ -369,14 +375,21 @@ export default function PublicEmergencyClient({
                 }
             })
             .catch((err) => {
+                if (cancelled) return;
                 const msg = (err?.message ?? '').toLowerCase();
                 if (msg.includes('404') || msg.includes('not found')) setError('not_found');
                 else if (msg.includes('lost')) setError('lost');
                 else if (msg.includes('inactive') || msg.includes('disabled')) setError('inactive');
                 else setError('generic');
             })
-            .finally(() => setLoading(false));
-    }, [params.publicId]);
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [publicId]);
 
     const statusText = useMemo(() => {
         if (error === 'inactive') return { title: d.inactive.title, desc: d.inactive.disabled };

@@ -9,7 +9,7 @@ export interface PublicProfileParams {
  * Caso de uso: obtener datos de emergencia visibles públicamente por id de perfil.
  */
 export class PublicProfileUseCases {
-    static async getPublicEmergencyProfile(params: PublicProfileParams): Promise<EmergencyProfile> {
+    static getPublicEmergencyProfile(params: PublicProfileParams): Promise<EmergencyProfile> {
         return PublicProfileService.getByPublicId(params.publicId);
     }
 }

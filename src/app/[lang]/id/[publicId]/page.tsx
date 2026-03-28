@@ -8,5 +8,7 @@ export default async function PublicIdPage({
     params: { lang: Locale; publicId: string };
 }) {
     const dictionary = await getDictionary(params.lang);
-    return <PublicEmergencyClient dictionary={dictionary} lang={params.lang} params={params} />;
+    return (
+        <PublicEmergencyClient dictionary={dictionary} lang={params.lang} publicId={params.publicId} />
+    );
 }

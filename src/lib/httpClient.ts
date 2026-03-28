@@ -5,9 +5,20 @@ const BASE_URL =
         ? ''
         : (process.env.NEXT_PUBLIC_API_URL || 'https://apilifetag.kodelabs.dev').replace(/\/$/, '');
 
+function isAbortError(error: unknown): boolean {
+    return (
+        (error instanceof DOMException && error.name === 'AbortError') ||
+        (error instanceof Error && error.name === 'AbortError')
+    );
+}
+
 export class HttpClient {
-    static async get<T>(url: string, headers: HeadersInit = {}): Promise<T> {
-        return this.request<T>(url, { method: 'GET', headers });
+    static async get<T>(
+        url: string,
+        headers: HeadersInit = {},
+        init?: Pick<RequestInit, 'signal'>,
+    ): Promise<T> {
+        return this.request<T>(url, { method: 'GET', headers, ...init });
     }
 
     static async post<T>(url: string, body: any, headers: HeadersInit = {}): Promise<T> {
@@ -57,7 +68,7 @@ export class HttpClient {
             }
             return await response.json() as T;
         } catch (error) {
-            console.error('HttpClient Error:', error);
+            if (!isAbortError(error)) console.error('HttpClient Error:', error);
             throw error;
         }
     }
