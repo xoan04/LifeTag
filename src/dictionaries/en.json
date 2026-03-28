@@ -1,8 +1,12 @@
 {
     "landing": {
         "nav": {
-            "login": "Login",
-            "getStarted": "Get Started"
+            "login": "Log in",
+            "getStarted": "Get started",
+            "menu": "Menu",
+            "menuAria": "Open navigation menu",
+            "language": "Language",
+            "switchToOtherLang": "Español"
         },
         "hero": {
             "badge": "Next-Gen Medical ID",
@@ -18,11 +22,22 @@
             "visualNfc": "NFC tap",
             "visualCardTitle": "Your live emergency card",
             "visualCardSub": "Medications, allergies, and ICE contacts—kept current from your dashboard.",
-            "visualBadgeLine": "Works offline"
+            "visualBadgeLine": "Works offline",
+            "phoneMock": {
+                "kindHuman": "HUMAN",
+                "demoName": "John Smith",
+                "bloodType": "O+",
+                "allergy": "Peanuts",
+                "callContact": "CALL MOTHER: Mary",
+                "condition": "Nearsighted",
+                "medication": "Medication B",
+                "footer": "Critical emergency information"
+            }
         },
         "problem": {
-            "overline": "The Problem",
+            "overline": "The problem",
             "title": "When seconds count, silence is fatal.",
+            "subtitle": "Three scenarios where critical information doesn't arrive in time.",
             "cards": {
                 "phones": {
                     "title": "Locked Phones",
@@ -39,7 +54,7 @@
             }
         },
         "solution": {
-            "overline": "The Solution",
+            "overline": "The solution",
             "title": "Your digital lifeline, securely attached to you.",
             "desc": "LifeTag allows you to create comprehensive digital emergency profiles and link them to multiple modern devices like NFC wristbands, stickers, and keychains. Anyone with a smartphone can scan your LifeTag to instantly access your critical info.",
             "points": [
@@ -50,25 +65,26 @@
             ]
         },
         "howItWorks": {
-            "title": "How It Works",
-            "subtitle": "Setup takes less than 3 minutes.",
+            "title": "How it works",
+            "subtitle": "Sign up, build your profile, and activate your tag in minutes.",
             "steps": {
                 "one": {
-                    "title": "Create Profile",
-                    "desc": "Add medical history, allergies, and emergency contacts into our secure cloud."
+                    "title": "Sign up",
+                    "desc": "Create your account and open the dashboard to manage profiles and devices."
                 },
                 "two": {
-                    "title": "Link Devices",
-                    "desc": "Activate NFC/QR bands or stickers by linking them to your profile via the dashboard."
+                    "title": "Create your profile",
+                    "desc": "Add medical details, allergies, and emergency contacts—that powers your public emergency page."
                 },
                 "three": {
-                    "title": "Emergency Access",
-                    "desc": "First responders simply tap or scan your tag to instantly view your emergency page."
+                    "title": "Activate your NFC device",
+                    "desc": "In the app you register the physical tag and write your profile’s public link onto it. NFC tap opens it instantly; a QR code is also generated for phones without NFC."
                 }
             }
         },
         "features": {
-            "title": "Powerful Features",
+            "overline": "Capabilities",
+            "title": "Powerful features",
             "subtitle": "Built from the ground up to be reliable, flexible, and completely secure.",
             "list": {
                 "devices": {
@@ -103,6 +119,7 @@
             "monthly": "Monthly",
             "yearly": "Yearly",
             "save": "Save 20%",
+            "perMonth": "/mo",
             "plans": {
                 "essential": {
                     "name": "Essential",
@@ -343,6 +360,8 @@
         "call": "CALL",
         "callOwner": "CALL OWNER",
         "whatsappOwner": "WHATSAPP OWNER",
+        "footerNote": "Critical emergency information",
+        "switchLang": "Change language",
         "human": {
             "conditionsTitle": "Medical Conditions",
             "medicationsTitle": "Current Medications",

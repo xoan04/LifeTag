@@ -6,96 +6,147 @@ import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 export function LandingFooter({ dictionary }: { dictionary: any }) {
     const d = dictionary.landing.footer;
     return (
-        <Box className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+        <Box
+            component="footer"
+            sx={{
+                bgcolor: '#0c0a09',
+                color: 'rgba(214,211,209,0.85)',
+                py: { xs: 6, md: 8 },
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                position: 'relative',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 3,
+                    background: 'linear-gradient(90deg, transparent, rgba(220,38,38,0.5), transparent)',
+                },
+            }}
+        >
             <Container maxWidth="lg">
-                <Grid container spacing={8} className="mb-8">
+                <Grid container spacing={{ xs: 4, md: 6 }} sx={{ mb: 6 }}>
                     <Grid size={{ xs: 12, md: 4 }}>
-                        <Typography variant="h5" fontWeight="900" className="text-white flex items-center gap-2 mb-4">
-                            <HealthAndSafetyIcon color="error" />
+                        <Typography variant="h5" fontWeight={900} sx={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                            <HealthAndSafetyIcon color="error" sx={{ fontSize: 32 }} />
                             LifeTag
                         </Typography>
-                        <Typography variant="body2" className="leading-relaxed">
+                        <Typography variant="body2" sx={{ lineHeight: 1.75, maxWidth: 320 }}>
                             {d.desc}
                         </Typography>
                     </Grid>
                     <Grid size={{ xs: 6, md: 2 }}>
-                        <Typography className="text-white font-bold mb-4 uppercase text-sm tracking-wider">{d.product}</Typography>
-                        <ul className="space-y-2 text-sm">
+                        <Typography sx={{ color: '#fff', fontWeight: 800, mb: 2, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                            {d.product}
+                        </Typography>
+                        <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, '& li': { mb: 1.25 } }}>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.productLinks.features}
                                 </a>
                             </li>
                             <li>
-                                <a href="#pricing" className="hover:text-white transition-colors">
+                                <a href="#pricing" className="text-sm hover:text-white transition-colors">
                                     {d.productLinks.pricing}
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.productLinks.pets}
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.productLinks.devices}
                                 </a>
                             </li>
-                        </ul>
+                        </Box>
                     </Grid>
                     <Grid size={{ xs: 6, md: 2 }}>
-                        <Typography className="text-white font-bold mb-4 uppercase text-sm tracking-wider">{d.company}</Typography>
-                        <ul className="space-y-2 text-sm">
+                        <Typography sx={{ color: '#fff', fontWeight: 800, mb: 2, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                            {d.company}
+                        </Typography>
+                        <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0, '& li': { mb: 1.25 } }}>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.companyLinks.about}
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.companyLinks.blog}
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.companyLinks.contact}
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a href="#" className="text-sm hover:text-white transition-colors">
                                     {d.companyLinks.partners}
                                 </a>
                             </li>
-                        </ul>
+                        </Box>
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                        <Typography className="text-white font-bold mb-4 uppercase text-sm tracking-wider">{d.subscribe.title}</Typography>
-                        <Box className="flex gap-2">
-                            <input
+                        <Typography sx={{ color: '#fff', fontWeight: 800, mb: 2, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                            {d.subscribe.title}
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
+                            <Box
+                                component="input"
                                 type="email"
                                 placeholder={d.subscribe.placeholder}
-                                className="bg-gray-800 w-full px-4 py-2 rounded-lg border border-gray-700 outline-none text-white focus:border-red-500 transition-colors"
+                                sx={{
+                                    flex: 1,
+                                    bgcolor: 'rgba(28,25,23,0.9)',
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(68,64,60,0.8)',
+                                    outline: 'none',
+                                    color: '#fff',
+                                    fontSize: 14,
+                                    '&::placeholder': { color: 'rgba(168,162,158,0.8)' },
+                                    '&:focus': { borderColor: 'rgba(220,38,38,0.6)', boxShadow: '0 0 0 3px rgba(220,38,38,0.12)' },
+                                }}
                             />
-                            <Button variant="contained" color="error" className="rounded-lg px-6 font-bold shadow-none">
+                            <Button
+                                variant="contained"
+                                color="error"
+                                sx={{ borderRadius: '12px', px: 3, fontWeight: 800, boxShadow: 'none', whiteSpace: 'nowrap' }}
+                            >
                                 {d.subscribe.button}
                             </Button>
                         </Box>
                     </Grid>
                 </Grid>
-                <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+                <Box
+                    sx={{
+                        borderTop: '1px solid rgba(68,64,60,0.6)',
+                        pt: 4,
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                    }}
+                >
                     <Typography variant="body2">{d.rights}</Typography>
-                    <div className="flex gap-6">
-                        <a href="#" className="hover:text-white transition-colors">
+                    <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <a href="#" className="text-sm hover:text-white transition-colors">
                             {d.legal.privacy}
                         </a>
-                        <a href="#" className="hover:text-white transition-colors">
+                        <a href="#" className="text-sm hover:text-white transition-colors">
                             {d.legal.terms}
                         </a>
-                        <a href="#" className="hover:text-white transition-colors">
+                        <a href="#" className="text-sm hover:text-white transition-colors">
                             {d.legal.cookies}
                         </a>
-                    </div>
-                </div>
+                    </Box>
+                </Box>
             </Container>
         </Box>
     );

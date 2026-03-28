@@ -1,16 +1,28 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import PetsIcon from '@mui/icons-material/Pets';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import { motion } from 'framer-motion';
 import { EmergencyUseCases } from '@/useCases/emergencyUseCases';
 import { EmergencyProfile } from '@/models/emergencyProfile';
 
 type LoadError = 'not_found' | 'inactive' | 'lost' | 'generic' | null;
+
+/** Rojos alineados con la vista móvil LifeTag (hero / perfil público) */
+const R = {
+    headerFrom: '#7f1d1d',
+    headerTo: '#5c1010',
+    primaryBtn: '#b91c1c',
+    primaryBtnHi: '#dc2626',
+} as const;
 
 function translateRelation(relation: string | null, lang: string): string {
     if (!relation) return '';
@@ -52,13 +64,15 @@ function translateRelation(relation: string | null, lang: string): string {
 
 function SkeletonEmergencyView() {
     return (
-        <div className="min-h-screen bg-slate-100 animate-pulse">
-            <div className="h-52 bg-slate-800 rounded-b-3xl" />
-            <div className="mx-auto -mt-8 w-full max-w-md space-y-3 px-4 pb-10">
-                <div className="h-24 rounded-2xl bg-slate-200" />
-                <div className="h-36 rounded-2xl bg-slate-200" />
-                <div className="h-24 rounded-2xl bg-slate-200" />
-                <div className="h-24 rounded-2xl bg-slate-200" />
+        <div className="min-h-screen animate-pulse bg-[#e8eaef]">
+            <div
+                className="h-48 rounded-b-[1.75rem] shadow-lg"
+                style={{ background: `linear-gradient(180deg, ${R.headerFrom} 0%, ${R.headerTo} 100%)` }}
+            />
+            <div className="mx-auto -mt-5 w-full max-w-md space-y-3 px-4 pb-10">
+                <div className="h-28 rounded-2xl bg-white/80 shadow-sm ring-1 ring-slate-200/80" />
+                <div className="h-32 rounded-2xl bg-white/80 shadow-sm ring-1 ring-slate-200/80" />
+                <div className="h-24 rounded-2xl bg-white/80 shadow-sm ring-1 ring-slate-200/80" />
             </div>
         </div>
     );
@@ -66,9 +80,9 @@ function SkeletonEmergencyView() {
 
 function StatusBanner({ title, desc }: { title: string; desc: string }) {
     return (
-        <div className="mx-auto mt-10 w-full max-w-md rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-lg font-extrabold text-amber-900">{title}</p>
-            <p className="mt-1 text-sm text-amber-800">{desc}</p>
+        <div className="mx-auto mt-10 w-full max-w-md rounded-2xl border border-amber-200/90 bg-amber-50 p-5 shadow-sm">
+            <p className="text-lg font-extrabold text-amber-950">{title}</p>
+            <p className="mt-2 text-sm leading-relaxed text-amber-900/90">{desc}</p>
         </div>
     );
 }
@@ -76,27 +90,43 @@ function StatusBanner({ title, desc }: { title: string; desc: string }) {
 function EmergencyHeader({ profile, d, lang }: { profile: EmergencyProfile; d: any; lang: string }) {
     const isHuman = profile.type === 'HUMAN';
     return (
-        <header className="rounded-b-3xl bg-red-900 px-4 pb-4 pt-6 text-white shadow-lg">
+        <header
+            className="relative overflow-hidden rounded-b-[1.75rem] px-4 pb-6 pt-8 text-white shadow-[0_10px_28px_rgba(92,16,16,0.35)]"
+            style={{ background: `linear-gradient(180deg, ${R.headerFrom} 0%, ${R.headerTo} 100%)` }}
+        >
             <button
+                type="button"
                 onClick={() => {
                     window.location.href = `/${lang === 'en' ? 'es' : 'en'}${window.location.pathname.replace(`/${lang}`, '')}`;
                 }}
-                className="absolute right-4 top-4 rounded-full bg-white/20 px-3 py-1 text-xs font-bold"
-                aria-label="switch-language"
-                type="button"
+                className="absolute right-4 top-4 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-sm transition hover:bg-white/20"
+                aria-label={d.switchLang ?? 'Language'}
             >
                 {lang === 'en' ? 'EN' : 'ES'}
             </button>
-            <div className="mx-auto w-full max-w-md">
-                <div className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-red-100">
-                    {isHuman ? <LocalHospitalIcon fontSize="small" /> : <PetsIcon fontSize="small" />}
-                    <span>{isHuman ? (lang === 'es' ? 'HUMANO' : 'HUMAN') : (lang === 'es' ? 'MASCOTA' : 'PET')}</span>
+
+            <div className="mx-auto w-full max-w-md pr-14">
+                <div className="mb-4 flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white shadow-sm">
+                        {isHuman ? (
+                            <LocalHospitalIcon sx={{ fontSize: 17, color: R.primaryBtnHi }} />
+                        ) : (
+                            <PetsIcon sx={{ fontSize: 17, color: R.primaryBtnHi }} />
+                        )}
+                    </span>
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-red-100/95">
+                        {isHuman ? (lang === 'es' ? 'Humano' : 'Human') : lang === 'es' ? 'Mascota' : 'Pet'}
+                    </span>
                 </div>
-                <h1 className="text-3xl font-black leading-tight">{profile.name}</h1>
+
+                <h1 className="text-[1.65rem] font-black leading-tight tracking-tight sm:text-3xl">{profile.name}</h1>
+
                 {isHuman && profile.bloodType && (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-xl bg-red-700 px-3 py-2 text-base font-extrabold">
-                        <span>🩸</span>
-                        <span>{d.blood}: {profile.bloodType}</span>
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-[10px] bg-black/25 px-3 py-2">
+                        <WaterDropIcon sx={{ fontSize: 18, color: '#fecaca' }} />
+                        <span className="text-sm font-extrabold tracking-wide">
+                            {d.blood}: {profile.bloodType}
+                        </span>
                     </div>
                 )}
             </div>
@@ -107,14 +137,17 @@ function EmergencyHeader({ profile, d, lang }: { profile: EmergencyProfile; d: a
 function AllergyAlert({ allergies, d }: { allergies: string[]; d: any }) {
     if (!allergies?.length) return null;
     return (
-        <section className="rounded-2xl border border-red-200 bg-red-50 p-3">
-            <div className="mb-2 flex items-center gap-2 text-red-700">
-                <WarningAmberIcon fontSize="small" />
-                <p className="text-base font-extrabold uppercase">{d.allergies}</p>
+        <section className="rounded-2xl border border-red-200/90 bg-[#fff5f5] p-4 shadow-sm ring-1 ring-red-100/60">
+            <div className="mb-3 flex items-center gap-2 text-red-700">
+                <WarningAmberIcon sx={{ fontSize: 20 }} />
+                <p className="text-xs font-extrabold uppercase tracking-[0.08em]">{d.allergies}</p>
             </div>
             <div className="flex flex-wrap gap-2">
                 {allergies.map((item, idx) => (
-                    <span key={`${item}-${idx}`} className="rounded-full bg-red-100 px-3 py-1 text-sm font-bold text-red-800">
+                    <span
+                        key={`${item}-${idx}`}
+                        className="rounded-lg border border-red-200/80 bg-red-100/90 px-3 py-1.5 text-sm font-bold text-red-900"
+                    >
                         {item}
                     </span>
                 ))}
@@ -142,31 +175,41 @@ function EmergencyContacts({
         window.setTimeout(() => setNotifying(false), 2000);
     };
 
+    const primaryBtn =
+        'flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-center text-sm font-extrabold uppercase tracking-wide text-white shadow-lg transition active:scale-[0.98]';
+    const primaryStyle = {
+        background: `linear-gradient(135deg, ${R.primaryBtnHi} 0%, ${R.primaryBtn} 100%)`,
+        boxShadow: '0 8px 24px rgba(185, 28, 28, 0.35)',
+    };
+
     return (
-        <section className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
-            <p className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-500">{d.contactsTitle}</p>
-            <div className="space-y-2">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_2px_12px_rgba(15,23,42,0.06)]">
+            <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-500">{d.contactsTitle}</p>
+            <div className="space-y-2.5">
                 {isHuman ? (
                     <>
                         {profile.emergencyContact1_phone && (
                             <motion.a
-                                whileTap={{ scale: 0.97 }}
+                                whileTap={{ scale: 0.98 }}
                                 href={`tel:${profile.emergencyContact1_phone}`}
                                 onClick={triggerNotifyState}
                                 aria-label={`call-${profile.emergencyContact1_name ?? 'contact-1'}`}
-                                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-center text-sm font-bold text-white"
+                                className={primaryBtn}
+                                style={primaryStyle}
                             >
                                 <PhoneIcon fontSize="small" />
-                                {d.call} {ec1Relation ? `${ec1Relation.toUpperCase()}:` : ''} {profile.emergencyContact1_name ?? ''}
+                                <span className="leading-tight">
+                                    {d.call} {ec1Relation ? `${ec1Relation.toUpperCase()}:` : ''} {profile.emergencyContact1_name ?? ''}
+                                </span>
                             </motion.a>
                         )}
                         {profile.emergencyContact2_phone && (
                             <motion.a
-                                whileTap={{ scale: 0.97 }}
+                                whileTap={{ scale: 0.98 }}
                                 href={`tel:${profile.emergencyContact2_phone}`}
                                 onClick={triggerNotifyState}
                                 aria-label="call-contact-2"
-                                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-red-300 px-3 py-3 text-center text-sm font-bold text-red-700"
+                                className="flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-xl border-2 border-red-300/90 bg-red-50/50 px-4 py-3 text-center text-sm font-extrabold uppercase tracking-wide text-red-800 transition hover:bg-red-50 active:scale-[0.98]"
                             >
                                 <PhoneIcon fontSize="small" />
                                 {d.call} {ec2Relation.toUpperCase()}
@@ -178,20 +221,21 @@ function EmergencyContacts({
                         {profile.ownerPhone && (
                             <>
                                 <motion.a
-                                    whileTap={{ scale: 0.97 }}
+                                    whileTap={{ scale: 0.98 }}
                                     href={`tel:${profile.ownerPhone}`}
                                     onClick={triggerNotifyState}
                                     aria-label="call-owner"
-                                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-sm font-bold text-white"
+                                    className={primaryBtn}
+                                    style={primaryStyle}
                                 >
                                     <PhoneIcon fontSize="small" />
                                     {d.callOwner}
                                 </motion.a>
                                 <motion.a
-                                    whileTap={{ scale: 0.97 }}
+                                    whileTap={{ scale: 0.98 }}
                                     href={`https://wa.me/${profile.ownerPhone.replace(/\D/g, '')}`}
                                     aria-label="whatsapp-owner"
-                                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-emerald-300 px-3 py-3 text-sm font-bold text-emerald-700"
+                                    className="flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-xl border-2 border-emerald-300/80 bg-emerald-50/40 px-4 py-3 text-sm font-extrabold text-emerald-800 transition hover:bg-emerald-50/70 active:scale-[0.98]"
                                 >
                                     <WhatsAppIcon fontSize="small" />
                                     {d.whatsappOwner}
@@ -202,72 +246,101 @@ function EmergencyContacts({
                 )}
             </div>
             {notifying && (
-                <p className="mt-2 text-center text-xs font-semibold text-slate-500">
-                    {lang === 'es' ? 'Notificando al propietario...' : 'Notifying owner...'}
+                <p className="mt-3 text-center text-xs font-semibold text-slate-500">
+                    {lang === 'es' ? 'Notificando al propietario…' : 'Notifying owner…'}
                 </p>
             )}
         </section>
     );
 }
 
-function MedicalInfo({ profile, d, lang }: { profile: EmergencyProfile; d: any; lang: string }) {
-    const isHuman = profile.type === 'HUMAN';
-    const baseCard = 'rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200';
+function ItemChips({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
+    const list = items.length ? items : [emptyLabel];
+    const isEmpty = !items.length;
     return (
-        <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
+            {list.map((text, i) => (
+                <span
+                    key={`${text}-${i}`}
+                    className={
+                        isEmpty
+                            ? 'rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium italic text-slate-500'
+                            : 'rounded-lg border border-slate-200/90 bg-slate-50/90 px-3 py-2 text-sm font-semibold text-slate-800'
+                    }
+                >
+                    {text}
+                </span>
+            ))}
+        </div>
+    );
+}
+
+function InfoSection({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
+    return (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_2px_12px_rgba(15,23,42,0.05)]">
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-700 ring-1 ring-red-100/80">
+                    {icon}
+                </span>
+                <h2 className="text-sm font-extrabold leading-snug text-slate-900">{title}</h2>
+            </div>
+            {children}
+        </section>
+    );
+}
+
+function MedicalInfo({ profile, d }: { profile: EmergencyProfile; d: any }) {
+    const isHuman = profile.type === 'HUMAN';
+    return (
+        <div className="space-y-3">
             {isHuman ? (
                 <>
-                    <section className={baseCard}>
-                        <p className="text-sm font-extrabold text-slate-900">❤️ {d.human.conditionsTitle}</p>
-                        <ul className="mt-1 space-y-1 text-sm text-slate-700">
-                            {(profile.medicalConditions.length ? profile.medicalConditions : [d.human.none]).map((c, i) => (
-                                <li key={`${c}-${i}`} className="leading-tight">• {c}</li>
-                            ))}
-                        </ul>
-                    </section>
-                    <section className={baseCard}>
-                        <p className="text-sm font-extrabold text-slate-900">💊 {d.human.medicationsTitle}</p>
-                        <ul className="mt-1 space-y-1 text-sm text-slate-700">
-                            {(profile.medications.length ? profile.medications : [d.human.none]).map((m, i) => (
-                                <li key={`${m}-${i}`} className="leading-tight">• {m}</li>
-                            ))}
-                        </ul>
-                    </section>
+                    <InfoSection
+                        icon={<FavoriteIcon sx={{ fontSize: 20 }} />}
+                        title={d.human.conditionsTitle}
+                    >
+                        <ItemChips items={profile.medicalConditions} emptyLabel={d.human.none} />
+                    </InfoSection>
+                    <InfoSection
+                        icon={<MedicationOutlinedIcon sx={{ fontSize: 21, color: '#b91c1c' }} />}
+                        title={d.human.medicationsTitle}
+                    >
+                        <ItemChips items={profile.medications} emptyLabel={d.human.none} />
+                    </InfoSection>
                 </>
             ) : (
                 <>
-                    <section className={baseCard}>
-                        <p className="text-sm font-extrabold text-slate-900">🐾 {d.pet.detailsTitle}</p>
-                        <p className="mt-1 text-sm text-slate-700">
-                            <span className="font-semibold">{d.pet.breedSpecies}:</span> {[profile.breed, profile.species].filter(Boolean).join(' / ') || '-'}
+                    <InfoSection icon={<PetsIcon sx={{ fontSize: 20 }} />} title={d.pet.detailsTitle}>
+                        <p className="text-sm text-slate-700">
+                            <span className="font-bold text-slate-900">{d.pet.breedSpecies}</span>{' '}
+                            {[profile.breed, profile.species].filter(Boolean).join(' · ') || '—'}
                         </p>
                         {profile.targetReward && (
-                            <p className="mt-1 text-sm font-semibold text-emerald-700">{d.pet.reward}: {profile.targetReward}</p>
+                            <p className="mt-3 rounded-lg border border-amber-200/90 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950">
+                                {d.pet.reward}: {profile.targetReward}
+                            </p>
                         )}
-                    </section>
-                    <section className={baseCard}>
-                        <p className="text-sm font-extrabold text-slate-900">🏥 {d.pet.vetTitle}</p>
-                        {profile.veterinarian_name && <p className="mt-1 text-sm text-slate-700">{profile.veterinarian_name}</p>}
+                    </InfoSection>
+                    <InfoSection icon={<LocalHospitalIcon sx={{ fontSize: 20 }} />} title={d.pet.vetTitle}>
+                        {profile.veterinarian_name && <p className="text-sm font-medium text-slate-800">{profile.veterinarian_name}</p>}
                         {profile.veterinarian_phone && (
                             <a
                                 href={`tel:${profile.veterinarian_phone}`}
-                                className="mt-2 inline-flex min-h-12 items-center rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-700"
+                                className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-slate-50/80 px-4 text-sm font-bold text-slate-800 transition hover:bg-slate-100"
                             >
                                 <PhoneIcon fontSize="small" />
-                                <span className="ml-1">{profile.veterinarian_phone}</span>
+                                {profile.veterinarian_phone}
                             </a>
                         )}
                         {profile.vaccinationStatus && (
-                            <p className="mt-2 text-sm text-slate-700">
-                                <span className="font-semibold">{d.pet.vaccination}:</span> {profile.vaccinationStatus}
+                            <p className="mt-3 text-sm text-slate-600">
+                                <span className="font-bold text-slate-800">{d.pet.vaccination}:</span> {profile.vaccinationStatus}
                             </p>
                         )}
-                    </section>
+                    </InfoSection>
                 </>
             )}
-            <p className="pt-1 text-center text-[11px] text-slate-500">
-                {lang === 'es' ? 'Información crítica de emergencia' : 'Critical emergency information'}
-            </p>
+            <p className="px-1 pt-1 text-center text-[11px] font-medium italic text-slate-500">{d.footerNote}</p>
         </div>
     );
 }
@@ -315,11 +388,11 @@ export default function PublicEmergencyClient({
 
     if (error === 'not_found' || error === 'generic') {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-                <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-slate-200">
-                    <LocalHospitalIcon className="!mb-2 !text-6xl !text-red-600" />
-                    <h2 className="text-xl font-extrabold text-slate-900">{d.notFound.title}</h2>
-                    <p className="mt-2 text-sm text-slate-600">{d.notFound.desc}</p>
+            <div className="flex min-h-screen items-center justify-center bg-[#e8eaef] p-4">
+                <div className="w-full max-w-sm rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-[0_8px_32px_rgba(15,23,42,0.08)]">
+                    <LocalHospitalIcon className="!mb-3 !text-6xl" sx={{ color: R.primaryBtnHi }} />
+                    <h2 className="text-xl font-black text-slate-900">{d.notFound.title}</h2>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{d.notFound.desc}</p>
                 </div>
             </div>
         );
@@ -327,7 +400,7 @@ export default function PublicEmergencyClient({
 
     if (statusText) {
         return (
-            <div className="min-h-screen bg-slate-100 px-4 py-10">
+            <div className="min-h-screen bg-[#e8eaef] px-4 py-10">
                 <StatusBanner title={statusText.title} desc={statusText.desc} />
             </div>
         );
@@ -336,23 +409,23 @@ export default function PublicEmergencyClient({
     if (!profile) return null;
 
     return (
-        <main className="min-h-screen bg-slate-100 pb-6">
+        <main className="min-h-screen bg-[#e8eaef] pb-8">
             <EmergencyHeader profile={profile} d={d} lang={lang} />
 
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className="mx-auto -mt-4 w-full max-w-md space-y-2 px-4"
+                transition={{ duration: 0.28 }}
+                className="mx-auto -mt-5 w-full max-w-md space-y-3 px-4"
             >
                 {profile.type === 'HUMAN' && <AllergyAlert allergies={profile.allergies} d={d} />}
 
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
                     <EmergencyContacts profile={profile} d={d} lang={lang} />
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                    <MedicalInfo profile={profile} d={d} lang={lang} />
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+                    <MedicalInfo profile={profile} d={d} />
                 </motion.div>
             </motion.div>
         </main>

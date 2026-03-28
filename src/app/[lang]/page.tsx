@@ -19,11 +19,11 @@ export default async function LandingPage({
     const dictionary = await getDictionary(lang);
 
     return (
-        <div className="min-h-screen bg-gray-50 overflow-x-hidden font-sans">
+        <div className="min-h-screen overflow-x-hidden font-sans bg-[#f8fafc] antialiased">
             <LandingNav dictionary={dictionary} lang={lang} />
             <LandingHero dictionary={dictionary} lang={lang} />
             <LandingProblem dictionary={dictionary} />
-            <LandingSolution dictionary={dictionary} />
+            <LandingSolution dictionary={dictionary} lang={lang} />
             <LandingHowItWorks dictionary={dictionary} />
             <LandingFeatures dictionary={dictionary} />
             <LandingPricing dictionary={dictionary} />

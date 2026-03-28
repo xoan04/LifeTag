@@ -2,164 +2,64 @@
 
 import { Box, Container, Typography, Button, Chip, Stack, Grid } from '@mui/material';
 import Link from 'next/link';
-import QrCode2Icon from '@mui/icons-material/QrCode2';
-import NfcIcon from '@mui/icons-material/Nfc';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import { HeroPhoneEmergencyScreen, LandingPhoneFrame } from '@/components/landing/LandingPhoneMockup';
 
-function HeroVisual({ dictionary }: { dictionary: any }) {
+function HeroVisual({ dictionary, lang }: { dictionary: any; lang: string }) {
     const d = dictionary.landing.hero;
-    return (
+
+    const callout = (
         <Box
-            className="relative mx-auto w-full max-w-[420px] md:max-w-none"
-            sx={{ perspective: '1200px' }}
+            sx={{
+                borderRadius: 2,
+                border: '1px solid rgba(255,255,255,0.12)',
+                bgcolor: 'rgba(8,10,13,0.9)',
+                backdropFilter: 'blur(12px)',
+                px: 2,
+                py: 1.25,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                textAlign: 'center',
+                maxWidth: 260,
+            }}
         >
-            {/* Anillos NFC — solo CSS */}
-            <Box
-                className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                sx={{ width: { xs: 320, sm: 380 }, height: { xs: 320, sm: 380 } }}
-            >
-                <Box
-                    className="absolute inset-0 rounded-full border border-red-500/25"
-                    sx={{ animation: 'lifetag-hero-pulse 3.2s ease-in-out infinite' }}
-                />
-                <Box
-                    className="absolute inset-6 rounded-full border border-red-400/20"
-                    sx={{
-                        animation: 'lifetag-hero-pulse 3.2s ease-in-out infinite',
-                        animationDelay: '0.6s',
-                    }}
-                />
-                <Box
-                    className="absolute inset-12 rounded-full border border-amber-200/10"
-                    sx={{
-                        animation: 'lifetag-hero-pulse 3.2s ease-in-out infinite',
-                        animationDelay: '1.2s',
-                    }}
-                />
-            </Box>
-
-            {/* Teléfono / tarjeta de producto */}
-            <Box
-                className="relative z-[1] mx-auto"
-                sx={{
-                    transform: { md: 'rotateY(-8deg) rotateX(4deg)' },
-                    transformStyle: 'preserve-3d',
-                    transition: 'transform 0.4s ease',
-                    '&:hover': { transform: { md: 'rotateY(-4deg) rotateX(2deg) scale(1.02)' } },
-                }}
-            >
-                <Box
-                    className="overflow-hidden rounded-[2rem] border shadow-2xl"
-                    sx={{
-                        borderColor: 'rgba(255,255,255,0.12)',
-                        background: 'linear-gradient(165deg, #141820 0%, #0a0c10 55%, #11151c 100%)',
-                        boxShadow: '0 40px 80px -20px rgba(0,0,0,0.75), 0 0 0 1px rgba(239,68,68,0.15) inset',
-                    }}
-                >
-                    {/* barra tipo “notch” */}
-                    <Box className="flex justify-center pt-3 pb-1">
-                        <Box className="h-1.5 w-16 rounded-full bg-white/10" />
-                    </Box>
-
-                    <Box className="px-5 pb-6 pt-2">
-                        <Stack direction="row" alignItems="center" justifyContent="space-between" className="mb-5">
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                <Box
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl"
-                                    sx={{ background: 'linear-gradient(135deg, #dc2626, #991b1b)' }}
-                                >
-                                    <LocalHospitalIcon sx={{ fontSize: 22, color: '#fff' }} />
-                                </Box>
-                                <Box>
-                                    <Typography variant="caption" className="block uppercase tracking-[0.2em] text-red-300/90">
-                                        LifeTag
-                                    </Typography>
-                                    <Typography variant="body2" fontWeight={700} className="text-white/95">
-                                        {d.visualScan}
-                                    </Typography>
-                                </Box>
-                            </Stack>
-                            <Chip
-                                icon={<NfcIcon sx={{ fontSize: '18px !important', color: '#fecaca !important' }} />}
-                                label={d.visualNfc}
-                                size="small"
-                                sx={{
-                                    height: 28,
-                                    borderColor: 'rgba(248,113,113,0.35)',
-                                    color: '#fecaca',
-                                    bgcolor: 'rgba(127,29,29,0.35)',
-                                    fontWeight: 700,
-                                    fontSize: 11,
-                                    letterSpacing: 0.3,
-                                }}
-                                variant="outlined"
-                            />
-                        </Stack>
-
-                        {/* Mock perfil */}
-                        <Box
-                            className="rounded-2xl border p-4"
-                            sx={{
-                                borderColor: 'rgba(255,255,255,0.08)',
-                                background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)',
-                            }}
-                        >
-                            <Stack direction="row" spacing={2} alignItems="flex-start">
-                                <Box
-                                    className="flex shrink-0 items-center justify-center rounded-xl bg-white p-2"
-                                    sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.25)' }}
-                                >
-                                    <QrCode2Icon sx={{ fontSize: 56, color: '#0f172a' }} />
-                                </Box>
-                                <Box className="min-w-0 flex-1">
-                                    <Typography variant="caption" className="text-emerald-400/90" fontWeight={700}>
-                                        ● LIVE
-                                    </Typography>
-                                    <Typography variant="subtitle1" fontWeight={800} className="mt-1 leading-snug text-white">
-                                        {d.visualCardTitle}
-                                    </Typography>
-                                    <Typography variant="body2" className="mt-2 leading-relaxed text-white/45">
-                                        {d.visualCardSub}
-                                    </Typography>
-                                </Box>
-                            </Stack>
-
-                            <Box
-                                className="mt-4 h-2 overflow-hidden rounded-full"
-                                sx={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
-                            >
-                                <Box
-                                    className="h-full w-2/3 rounded-full"
-                                    sx={{
-                                        background: 'linear-gradient(90deg, #ef4444, #f97316)',
-                                        animation: 'lifetag-hero-shine 2.5s ease-in-out infinite',
-                                    }}
-                                />
-                            </Box>
-                        </Box>
-                    </Box>
-                </Box>
-
-                {/* etiqueta flotante */}
-                <Box
-                    className="absolute -right-1 top-24 z-[2] hidden rounded-lg border px-3 py-2 sm:block"
-                    sx={{
-                        borderColor: 'rgba(255,255,255,0.12)',
-                        backgroundColor: 'rgba(8,10,13,0.85)',
-                        backdropFilter: 'blur(12px)',
-                        boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
-                    }}
-                >
-                    <Typography variant="caption" className="block text-[10px] font-semibold uppercase tracking-widest text-red-300/90">
-                        {d.statChannels}
-                    </Typography>
-                    <Typography variant="caption" className="text-white/55">
-                        {d.visualBadgeLine}
-                    </Typography>
-                </Box>
-            </Box>
-
+            <Typography variant="caption" sx={{ display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', color: 'rgba(252,165,165,0.95)' }}>
+                {d.statChannels}
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', mt: 0.25, display: 'block' }}>
+                {d.visualBadgeLine}
+            </Typography>
         </Box>
+    );
+
+    return (
+        <Stack
+            alignItems="center"
+            spacing={2.5}
+            className="mx-auto w-full"
+            sx={{
+                position: 'relative',
+                perspective: '1400px',
+                maxWidth: { xs: 'min(100%, 280px)', sm: 'min(100%, 320px)' },
+            }}
+        >
+            {/* Halo suave (sin rectángulos concéntricos) */}
+            <Box
+                className="pointer-events-none absolute left-1/2 top-[30%] z-0 -translate-x-1/2 -translate-y-1/2"
+                sx={{
+                    width: { xs: 280, sm: 320 },
+                    height: { xs: 400, sm: 440 },
+                    borderRadius: '50%',
+                    background: 'radial-gradient(ellipse at center, rgba(220,38,38,0.16) 0%, rgba(220,38,38,0.04) 45%, transparent 70%)',
+                    animation: 'lifetag-hero-pulse 4s ease-in-out infinite',
+                }}
+            />
+
+            <LandingPhoneFrame enable3d>
+                <HeroPhoneEmergencyScreen dictionary={dictionary} lang={lang} />
+            </LandingPhoneFrame>
+
+            {/* Callout debajo del teléfono — no solapa el marco */}
+            <Box sx={{ position: 'relative', zIndex: 2 }}>{callout}</Box>
+        </Stack>
     );
 }
 
@@ -350,7 +250,7 @@ export function LandingHero({ dictionary, lang }: { dictionary: any; lang: strin
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <HeroVisual dictionary={dictionary} />
+                        <HeroVisual dictionary={dictionary} lang={lang} />
                     </Grid>
                 </Grid>
             </Container>

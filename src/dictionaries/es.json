@@ -1,8 +1,12 @@
 {
     "landing": {
         "nav": {
-            "login": "Iniciar Sesión",
-            "getStarted": "Empezar"
+            "login": "Iniciar sesión",
+            "getStarted": "Empezar",
+            "menu": "Menú",
+            "menuAria": "Abrir menú de navegación",
+            "language": "Idioma",
+            "switchToOtherLang": "English"
         },
         "hero": {
             "badge": "ID Médico de Nueva Generación",
@@ -18,11 +22,22 @@
             "visualNfc": "Toque NFC",
             "visualCardTitle": "Tu tarjeta de emergencia en vivo",
             "visualCardSub": "Medicamentos, alergias y contactos ICE—actualizados desde tu panel.",
-            "visualBadgeLine": "Funciona al instante"
+            "visualBadgeLine": "Funciona al instante",
+            "phoneMock": {
+                "kindHuman": "HUMANO",
+                "demoName": "Juan Gomez",
+                "bloodType": "O+",
+                "allergy": "Maní",
+                "callContact": "LLAMAR A MADRE: Otilia",
+                "condition": "Miope",
+                "medication": "Medicamento B",
+                "footer": "Información crítica de emergencia"
+            }
         },
         "problem": {
-            "overline": "El Problema",
+            "overline": "El problema",
             "title": "Cuando los segundos cuentan, el silencio es fatal.",
+            "subtitle": "Tres escenarios donde la información crítica no llega a tiempo.",
             "cards": {
                 "phones": {
                     "title": "Teléfonos Bloqueados",
@@ -39,7 +54,7 @@
             }
         },
         "solution": {
-            "overline": "La Solución",
+            "overline": "La solución",
             "title": "Tu línea de vida digital, pegada a ti de forma segura.",
             "desc": "LifeTag te permite crear perfiles de emergencia digitales completos y enlazarlos a múltiples dispositivos modernos como pulseras NFC, stickers y llaveros. Cualquiera con un smartphone puede escanear tu LifeTag para acceder al instante a tu información crítica.",
             "points": [
@@ -50,25 +65,26 @@
             ]
         },
         "howItWorks": {
-            "title": "Cómo Funciona",
-            "subtitle": "La configuración toma menos de 3 minutos.",
+            "title": "Cómo funciona",
+            "subtitle": "Registro, perfil y activación de tu tag en pocos minutos.",
             "steps": {
                 "one": {
-                    "title": "Crea tu Perfil",
-                    "desc": "Agrega historial médico, alergias y contactos de emergencia en nuestra nube segura."
+                    "title": "Regístrate",
+                    "desc": "Crea tu cuenta y entra al panel para gestionar perfiles y dispositivos."
                 },
                 "two": {
-                    "title": "Enlaza Dispositivos",
-                    "desc": "Activa pulseras o stickers NFC/QR enlazándolos a tu perfil desde el panel de control."
+                    "title": "Crea tu perfil",
+                    "desc": "Completa datos médicos, alergias y contactos de emergencia. Esa información alimenta tu página pública de emergencia."
                 },
                 "three": {
-                    "title": "Acceso de Emergencia",
-                    "desc": "Los socorristas simplemente tocan o escanean tu placa para ver tu página de emergencia al instante."
+                    "title": "Activa tu dispositivo NFC",
+                    "desc": "Desde la app registras el tag físico y escribes en él el enlace público de tu perfil. Con contacto NFC se abre al instante; también se genera un QR para teléfonos sin NFC."
                 }
             }
         },
         "features": {
-            "title": "Funciones Poderosas",
+            "overline": "Capacidades",
+            "title": "Funciones poderosas",
             "subtitle": "Construido desde cero para ser confiable, flexible y completamente seguro.",
             "list": {
                 "devices": {
@@ -103,6 +119,7 @@
             "monthly": "Mensual",
             "yearly": "Anual",
             "save": "Ahorra 20%",
+            "perMonth": "/mes",
             "plans": {
                 "essential": {
                     "name": "Esencial",
@@ -343,6 +360,8 @@
         "call": "LLAMAR A",
         "callOwner": "LLAMAR AL DUEÑO",
         "whatsappOwner": "WHATSAPP",
+        "footerNote": "Información crítica de emergencia",
+        "switchLang": "Cambiar idioma",
         "human": {
             "conditionsTitle": "Condiciones Médicas",
             "medicationsTitle": "Medicamentos Actuales",
