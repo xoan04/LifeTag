@@ -2,7 +2,7 @@ import { Device } from '@/models/device';
 
 /**
  * Perfil para vista de emergencia.
- * Contrato actual: GET /api/profiles/:profileId
+ * Origen típico: API pública GET /api/profiles/:profileId (mapeado desde PublicProfileApiResponse).
  */
 export interface EmergencyProfile {
     id: string;

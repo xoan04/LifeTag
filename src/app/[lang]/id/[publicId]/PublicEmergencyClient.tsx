@@ -11,7 +11,7 @@ import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import { motion } from 'framer-motion';
-import { EmergencyUseCases } from '@/useCases/emergencyUseCases';
+import { PublicProfileUseCases } from '@/useCases/publicProfileUseCases';
 import { EmergencyProfile } from '@/models/emergencyProfile';
 
 type LoadError = 'not_found' | 'inactive' | 'lost' | 'generic' | null;
@@ -360,7 +360,7 @@ export default function PublicEmergencyClient({
     const [error, setError] = useState<LoadError>(null);
 
     useEffect(() => {
-        EmergencyUseCases.getEmergencyProfile({ publicId: params.publicId })
+        PublicProfileUseCases.getPublicEmergencyProfile({ publicId: params.publicId })
             .then((data) => {
                 if (!data.isActive) {
                     setError('inactive');
