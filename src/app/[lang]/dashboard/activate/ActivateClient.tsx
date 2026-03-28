@@ -31,6 +31,7 @@ import {
 } from '@/lib/nfcWeb';
 import { ProfileUseCases } from '@/useCases/profileUseCases';
 import { DeviceUseCases } from '@/useCases/deviceUseCases';
+import { NFC_FORM_FACTORS, type NfcFormFactor } from '@/models/device';
 
 /**
  * Solo vinculación de etiquetas NFC físicas.
@@ -54,6 +55,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
     const [linkError, setLinkError] = useState<string | null>(null);
     const [nfcWriteError, setNfcWriteError] = useState<string | null>(null);
     const [pendingPublicUrl, setPendingPublicUrl] = useState<string | null>(null);
+    const [formFactor, setFormFactor] = useState<NfcFormFactor>('NFC_BAND');
 
     const loadProfiles = useCallback(async () => {
         setLoadingProfiles(true);
@@ -104,7 +106,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                 ? `${window.location.origin}/${lang}/id/${selectedProfileId}`
                 : `/${lang}/id/${selectedProfileId}`;
         try {
-            await DeviceUseCases.registerAndActivate(token, 'NFC_TAG', selectedProfileId);
+            await DeviceUseCases.registerAndActivate(token, selectedProfileId, formFactor);
 
             if (isWebNfcWriteSupported()) {
                 const ok = await tryWriteNfcUrlRecord(publicUrl);
@@ -261,6 +263,20 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                             </Button>
                                         </Box>
                                     )}
+                                    <TextField
+                                        select
+                                        fullWidth
+                                        label={dDevices.formFactor.label}
+                                        value={formFactor}
+                                        onChange={(e) => setFormFactor(e.target.value as NfcFormFactor)}
+                                        sx={{ mt: 2 }}
+                                    >
+                                        {NFC_FORM_FACTORS.map((ff) => (
+                                            <MenuItem key={ff} value={ff}>
+                                                {dDevices.formFactor[ff]}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
                                 </Box>
 
                                 <Box>

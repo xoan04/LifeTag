@@ -83,8 +83,17 @@ export function formatNfcUidColons(serial: string): string {
     return pairs.join(':');
 }
 
+type NfcNdefWriteOptions = {
+    /** Sustituye todo el mensaje NDEF del tag (borra registros anteriores y deja solo lo que enviamos). */
+    overwrite?: boolean;
+    signal?: AbortSignal;
+};
+
 type NfcNdefWriterClass = new () => {
-    write: (options: { records: Array<{ recordType: string; data: string }> }) => Promise<void>;
+    write: (
+        message: { records: Array<{ recordType: string; data: string }> },
+        options?: NfcNdefWriteOptions
+    ) => Promise<void>;
 };
 
 export function isWebNfcWriteSupported(): boolean {
@@ -93,6 +102,7 @@ export function isWebNfcWriteSupported(): boolean {
 
 /**
  * Graba un registro NDEF URL en la etiqueta (p. ej. abrir el perfil público al acercar el móvil).
+ * Con `overwrite: true` el mensaje anterior del tag se sustituye por completo (solo queda esta URL).
  * Requiere Chrome/Android con NFC y un segundo acercamiento tras la lectura.
  */
 export async function writeNfcUrlRecord(absoluteUrl: string): Promise<void> {
@@ -101,9 +111,10 @@ export async function writeNfcUrlRecord(absoluteUrl: string): Promise<void> {
     }
     const NDEFWriterClass = (window as unknown as { NDEFWriter: NfcNdefWriterClass }).NDEFWriter;
     const writer = new NDEFWriterClass();
-    await writer.write({
-        records: [{ recordType: 'url', data: absoluteUrl }],
-    });
+    await writer.write(
+        { records: [{ recordType: 'url', data: absoluteUrl }] },
+        { overwrite: true }
+    );
 }
 
 /**

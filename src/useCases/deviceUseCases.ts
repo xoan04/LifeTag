@@ -2,6 +2,7 @@ import { DeviceService } from '@/services/deviceService';
 import { PlanUseCases } from '@/useCases/planUseCases';
 import {
     Device,
+    NfcFormFactor,
     RegisterDeviceRequest,
     RegisterDeviceResponse,
     ActivateDeviceRequest,
@@ -95,11 +96,18 @@ export class DeviceUseCases {
      */
     static async registerAndActivate(
         deviceToken: string,
-        deviceType: 'QR_TAG' | 'NFC_TAG',
-        profileId: string
+        profileId: string,
+        formFactor?: NfcFormFactor
     ): Promise<Device> {
-        await this.registerDevice({ deviceToken, deviceType });
-        const { device } = await this.activateDevice({ deviceToken, profileId, deviceType });
+        const deviceType = 'NFC_TAG' as const;
+        const registerBody: RegisterDeviceRequest = { deviceToken, deviceType };
+        const activateBody: ActivateDeviceRequest = { deviceToken, profileId, deviceType };
+        if (formFactor) {
+            registerBody.formFactor = formFactor;
+            activateBody.formFactor = formFactor;
+        }
+        await this.registerDevice(registerBody);
+        const { device } = await this.activateDevice(activateBody);
         return device;
     }
 

@@ -50,7 +50,7 @@ export const mockDevices: Device[] = [
     {
         id: 'd-2',
         profileId: 'p-1',
-        deviceType: 'sticker',
+        deviceType: 'nfc',
         deviceToken: 'XY123Z',
         status: 'active',
         createdAt: new Date().toISOString()
@@ -58,7 +58,7 @@ export const mockDevices: Device[] = [
     {
         id: 'd-3',
         profileId: 'p-2',
-        deviceType: 'qr',
+        deviceType: 'nfc',
         deviceToken: 'BX773P',
         status: 'active',
         createdAt: new Date().toISOString()

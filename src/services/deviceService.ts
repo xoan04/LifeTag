@@ -5,6 +5,7 @@ import {
     RegisterDeviceResponse,
     ActivateDeviceRequest,
     ActivateDeviceResponse,
+    normalizeRegisteredDevice,
 } from '@/models/device';
 
 export class DeviceService {
@@ -13,7 +14,9 @@ export class DeviceService {
      * GET /api/devices
      */
     static async getDevices(): Promise<Device[]> {
-        return HttpClient.get<Device[]>('/api/devices');
+        const list = await HttpClient.get<Device[]>('/api/devices');
+        // La API podría devolver QR_TAG en datos antiguos; en el producto el QR público no es un device.
+        return list.map((d) => normalizeRegisteredDevice(d));
     }
 
     /**
@@ -22,7 +25,8 @@ export class DeviceService {
      * POST /api/devices
      */
     static async registerDevice(data: RegisterDeviceRequest): Promise<RegisterDeviceResponse> {
-        return HttpClient.post<RegisterDeviceResponse>('/api/devices', data);
+        const res = await HttpClient.post<RegisterDeviceResponse>('/api/devices', data);
+        return { ...res, device: normalizeRegisteredDevice(res.device) };
     }
 
     /**
@@ -31,7 +35,8 @@ export class DeviceService {
      * POST /api/devices/activate
      */
     static async activateDevice(data: ActivateDeviceRequest): Promise<ActivateDeviceResponse> {
-        return HttpClient.post<ActivateDeviceResponse>('/api/devices/activate', data);
+        const res = await HttpClient.post<ActivateDeviceResponse>('/api/devices/activate', data);
+        return { ...res, device: normalizeRegisteredDevice(res.device) };
     }
 
     /**

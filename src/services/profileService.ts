@@ -4,6 +4,7 @@ import {
     CreateProfileRequest,
     UpdateProfileRequest,
 } from '@/models/profile';
+import { normalizeRegisteredDevice } from '@/models/device';
 
 export class ProfileService {
     /**
@@ -11,7 +12,11 @@ export class ProfileService {
      * GET /api/profiles
      */
     static async getProfiles(): Promise<Profile[]> {
-        return HttpClient.get<Profile[]>('/api/profiles');
+        const list = await HttpClient.get<Profile[]>('/api/profiles');
+        return list.map((p) => ({
+            ...p,
+            devices: (p.devices ?? []).map(normalizeRegisteredDevice),
+        }));
     }
 
     /**
@@ -19,7 +24,11 @@ export class ProfileService {
      * GET /api/profiles/:profileId
      */
     static async getProfile(profileId: string): Promise<Profile> {
-        return HttpClient.get<Profile>(`/api/profiles/${profileId}`);
+        const p = await HttpClient.get<Profile>(`/api/profiles/${profileId}`);
+        return {
+            ...p,
+            devices: (p.devices ?? []).map(normalizeRegisteredDevice),
+        };
     }
 
     /**
@@ -27,7 +36,11 @@ export class ProfileService {
      * POST /api/profiles
      */
     static async createProfile(data: CreateProfileRequest): Promise<Profile> {
-        return HttpClient.post<Profile>('/api/profiles', data);
+        const p = await HttpClient.post<Profile>('/api/profiles', data);
+        return {
+            ...p,
+            devices: (p.devices ?? []).map(normalizeRegisteredDevice),
+        };
     }
 
     /**
@@ -35,7 +48,11 @@ export class ProfileService {
      * PUT /api/profiles/:profileId
      */
     static async updateProfile(profileId: string, data: UpdateProfileRequest): Promise<Profile> {
-        return HttpClient.put<Profile>(`/api/profiles/${profileId}`, data);
+        const p = await HttpClient.put<Profile>(`/api/profiles/${profileId}`, data);
+        return {
+            ...p,
+            devices: (p.devices ?? []).map(normalizeRegisteredDevice),
+        };
     }
 
     /**

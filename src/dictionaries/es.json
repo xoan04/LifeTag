@@ -10,7 +10,15 @@
             "title2": "Accesible al Instante.",
             "subtitle": "Identificación inteligente QR y NFC para humanos y mascotas. Asegúrate de que los socorristas siempre tengan la información crítica que necesitan para salvar vidas.",
             "getStarted": "Comenzar gratis",
-            "viewDemo": "Ver Demo"
+            "viewDemo": "Ver Demo",
+            "statNoApp": "Sin instalar apps",
+            "statChannels": "QR y NFC",
+            "statPrivacy": "Tú decides qué es público",
+            "visualScan": "Escanear abre el perfil",
+            "visualNfc": "Toque NFC",
+            "visualCardTitle": "Tu tarjeta de emergencia en vivo",
+            "visualCardSub": "Medicamentos, alergias y contactos ICE—actualizados desde tu panel.",
+            "visualBadgeLine": "Funciona al instante"
         },
         "problem": {
             "overline": "El Problema",
@@ -379,7 +387,7 @@
     },
     "devices": {
         "title": "Mis Dispositivos",
-        "subtitle": "Dispositivos NFC/QR vinculados a tus perfiles",
+        "subtitle": "Dispositivos NFC vinculados a tus perfiles",
         "empty": "No tienes dispositivos registrados.",
         "emptyAction": "Activar mi primer dispositivo",
         "status": {
@@ -388,8 +396,14 @@
             "UNACTIVATED": "Sin activar"
         },
         "type": {
-            "QR_TAG": "Tag QR",
-            "NFC_TAG": "Tag NFC"
+            "NFC_TAG": "Dispositivo NFC"
+        },
+        "formFactor": {
+            "label": "Tipo de producto NFC",
+            "NFC_BAND": "Banda",
+            "NFC_STICKER": "Sticker",
+            "NFC_CARD": "Tarjeta",
+            "NFC_RING": "Anillo"
         },
         "linkedTo": "Vinculado a",
         "notLinked": "Sin perfil vinculado",
@@ -409,9 +423,6 @@
             "title": "Activar y vincular",
             "profileLabel": "Selecciona el perfil",
             "submit": "Vincular a perfil",
-            "linkModeQr": "QR (enlace público)",
-            "linkModeNfc": "NFC (etiqueta física)",
-            "qrHint": "Se creará un dispositivo QR vinculado al perfil. El código escaneable debe apuntar a la página pública de emergencia (mismo enlace que verás al guardar).",
             "nfcHint": "Introduce el ID de la etiqueta o escanéala con el móvil. Es el identificador físico del chip, no el enlace web.",
             "publicPage": "Página pública",
             "successToast": "¡Dispositivo activado y vinculado correctamente!",

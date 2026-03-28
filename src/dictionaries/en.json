@@ -10,7 +10,15 @@
             "title2": "Instantly Accessible.",
             "subtitle": "Smart QR and NFC identification for humans and pets. Ensure first responders always have the critical information they need to save lives.",
             "getStarted": "Get Started",
-            "viewDemo": "View Demo"
+            "viewDemo": "View Demo",
+            "statNoApp": "No app to install",
+            "statChannels": "QR & NFC",
+            "statPrivacy": "You control what's public",
+            "visualScan": "Scan opens profile",
+            "visualNfc": "NFC tap",
+            "visualCardTitle": "Your live emergency card",
+            "visualCardSub": "Medications, allergies, and ICE contacts—kept current from your dashboard.",
+            "visualBadgeLine": "Works offline"
         },
         "problem": {
             "overline": "The Problem",
@@ -379,7 +387,7 @@
     },
     "devices": {
         "title": "My Devices",
-        "subtitle": "NFC/QR devices linked to your profiles",
+        "subtitle": "NFC devices linked to your profiles",
         "empty": "You have no registered devices.",
         "emptyAction": "Activate my first device",
         "status": {
@@ -388,8 +396,14 @@
             "UNACTIVATED": "Not activated"
         },
         "type": {
-            "QR_TAG": "QR Tag",
-            "NFC_TAG": "NFC Tag"
+            "NFC_TAG": "NFC device"
+        },
+        "formFactor": {
+            "label": "NFC product type",
+            "NFC_BAND": "Wristband",
+            "NFC_STICKER": "Sticker",
+            "NFC_CARD": "Card",
+            "NFC_RING": "Ring"
         },
         "linkedTo": "Linked to",
         "notLinked": "No profile linked",
@@ -409,9 +423,6 @@
             "title": "Activate & link",
             "profileLabel": "Select a profile",
             "submit": "Link to profile",
-            "linkModeQr": "QR (public link)",
-            "linkModeNfc": "NFC (physical tag)",
-            "qrHint": "A QR device will be linked to the profile. The scannable code should point to the public emergency page (same link shown after saving).",
             "nfcHint": "Enter the ID printed on the tag or scan it with your phone. This is the physical chip ID, not the web link.",
             "publicPage": "Public page",
             "successToast": "Device activated and linked successfully!",

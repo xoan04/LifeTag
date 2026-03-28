@@ -1,4 +1,5 @@
-export type DeviceType = 'nfc' | 'qr' | 'sticker';
+/** Mock legacy: solo hardware NFC; el QR del perfil no es un device. */
+export type DeviceType = 'nfc';
 export type DeviceStatus = 'active' | 'lost' | 'disabled';
 
 export interface Device {

@@ -12,7 +12,7 @@ interface ProfileBase {
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
-    /** Dispositivos NFC/QR vinculados a este perfil */
+    /** Dispositivos NFC físicos vinculados a este perfil (el QR público del perfil no cuenta como device) */
     devices: Device[];
 }
 

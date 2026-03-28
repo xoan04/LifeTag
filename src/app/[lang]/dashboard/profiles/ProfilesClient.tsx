@@ -22,7 +22,7 @@ import { useRouter } from 'next/navigation';
 import { ProfileUseCases } from '@/useCases/profileUseCases';
 import { DeviceUseCases } from '@/useCases/deviceUseCases';
 import { Profile } from '@/models/profile';
-import { Device } from '@/models/device';
+import { Device, NFC_FORM_FACTORS, type NfcFormFactor } from '@/models/device';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
 import {
     readNfcTagOnce,
@@ -71,6 +71,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     const [activating, setActivating] = useState(false);
     const [activateNfcWriteError, setActivateNfcWriteError] = useState<string | null>(null);
     const [activatePendingPublicUrl, setActivatePendingPublicUrl] = useState<string | null>(null);
+    const [activateFormFactor, setActivateFormFactor] = useState<NfcFormFactor>('NFC_BAND');
 
     // ── Estado del Escáner (solo NFC; el QR no se “asigna” como la etiqueta física) ──
     const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
@@ -171,6 +172,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         setActivatePendingPublicUrl(null);
         setActivateToken('');
         setActivateProfileId('');
+        setActivateFormFactor('NFC_BAND');
         setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
     };
 
@@ -186,7 +188,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         setActivateNfcWriteError(null);
         setActivatePendingPublicUrl(null);
         try {
-            await DeviceUseCases.registerAndActivate(token, 'NFC_TAG', activateProfileId);
+            await DeviceUseCases.registerAndActivate(token, activateProfileId, activateFormFactor);
 
             if (isWebNfcWriteSupported() && publicUrl) {
                 const ok = await tryWriteNfcUrlRecord(publicUrl);
@@ -274,8 +276,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         }
     };
 
-    const nfcDevicesOnly = devices.filter((d) => d.deviceType !== 'QR_TAG');
-
     // ─────────────────────────────────────────────────────────────────────────
     return (
         <Box sx={{ position: 'relative', minHeight: '80vh' }}>
@@ -334,8 +334,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     <Grid container spacing={3}>
                         {profiles.map(profile => {
                             const isHuman = profile.type === 'HUMAN';
-                            const nfcLinked =
-                                profile.devices?.filter((d) => d.deviceType === 'NFC_TAG').length ?? 0;
+                            const nfcLinked = profile.devices?.length ?? 0;
                             const publicProfileId = profile.id;
 
                             return (
@@ -440,7 +439,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             <TabPanel value={tab} index={1}>
                 {loadingDevices ? (
                     <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>
-                ) : nfcDevicesOnly.length === 0 ? (
+                ) : devices.length === 0 ? (
                     <Box textAlign="center" py={8}>
                         <DevicesIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
                         <Typography color="text.secondary" mb={2}>{dDevices.empty}</Typography>
@@ -450,7 +449,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     </Box>
                 ) : (
                     <Stack spacing={2}>
-                        {nfcDevicesOnly.map(device => (
+                        {devices.map(device => (
                             <Card variant="outlined" key={device.id} sx={{ transition: 'box-shadow .2s', '&:hover': { boxShadow: 3 } }}>
                                 <CardContent>
                                     <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
@@ -459,8 +458,12 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                             <NfcIcon color="action" />
                                             <Box>
                                                 <Typography fontWeight={700}>{device.deviceToken}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {dDevices.type[device.deviceType] ?? device.deviceType}
+                                                <Typography variant="caption" color="text.secondary" component="div">
+                                                    {dDevices.type.NFC_TAG}
+                                                    {device.formFactor &&
+                                                    typeof dDevices.formFactor[device.formFactor as string] === 'string'
+                                                        ? ` · ${dDevices.formFactor[device.formFactor as string]}`
+                                                        : ''}
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -609,6 +612,19 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                                 </Button>
                                             </Box>
                                         )}
+                                        <TextField
+                                            select
+                                            fullWidth
+                                            label={dDevices.formFactor.label}
+                                            value={activateFormFactor}
+                                            onChange={(e) => setActivateFormFactor(e.target.value as NfcFormFactor)}
+                                        >
+                                            {NFC_FORM_FACTORS.map((ff) => (
+                                                <MenuItem key={ff} value={ff}>
+                                                    {dDevices.formFactor[ff]}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
                                         {isWebNfcWriteSupported() && dAct?.nfcWriteHint && (
                                             <Alert severity="info">{dAct.nfcWriteHint}</Alert>
                                         )}
