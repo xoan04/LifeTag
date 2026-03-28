@@ -24,7 +24,15 @@ import { DeviceUseCases } from '@/useCases/deviceUseCases';
 import { Profile } from '@/models/profile';
 import { Device } from '@/models/device';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
-import { readNfcTagOnce, isWebNfcSupported, isAppleMobileWeb, classifyNfcFailure } from '@/lib/nfcWeb';
+import {
+    readNfcTagOnce,
+    isWebNfcSupported,
+    isWebNfcWriteSupported,
+    isAppleMobileWeb,
+    classifyNfcFailure,
+    normalizeNfcDeviceToken,
+    tryWriteNfcUrlRecord,
+} from '@/lib/nfcWeb';
 import { ProfilePublicQr } from '@/components/ProfilePublicQr';
 
 // ─── Tab panel helper ────────────────────────────────────────────────────────
@@ -61,6 +69,8 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     const [activateToken, setActivateToken] = useState('');
     const [activateProfileId, setActivateProfileId] = useState('');
     const [activating, setActivating] = useState(false);
+    const [activateNfcWriteError, setActivateNfcWriteError] = useState<string | null>(null);
+    const [activatePendingPublicUrl, setActivatePendingPublicUrl] = useState<string | null>(null);
 
     // ── Estado del Escáner (solo NFC; el QR no se “asigna” como la etiqueta física) ──
     const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
@@ -152,17 +162,45 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         }
     };
 
-    // ── Activar + vincular device ─────────────────────────────────────────────
+    const dAct = dict.dashboard?.activate;
+
+    const closeActivateDialog = () => {
+        setActivateOpen(false);
+        setActivateScanError(null);
+        setActivateNfcWriteError(null);
+        setActivatePendingPublicUrl(null);
+        setActivateToken('');
+        setActivateProfileId('');
+        setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
+    };
+
+    // ── Activar + vincular device (+ escritura NDEF URL del perfil público) ───
     const handleActivate = async () => {
         if (!activateProfileId || !activateToken.trim()) return;
+        const token = normalizeNfcDeviceToken(activateToken);
+        const publicUrl =
+            typeof window !== 'undefined'
+                ? `${window.location.origin}/${lang}/id/${activateProfileId}`
+                : '';
         setActivating(true);
+        setActivateNfcWriteError(null);
+        setActivatePendingPublicUrl(null);
         try {
-            await DeviceUseCases.registerAndActivate(activateToken.trim(), 'NFC_TAG', activateProfileId);
+            await DeviceUseCases.registerAndActivate(token, 'NFC_TAG', activateProfileId);
+
+            if (isWebNfcWriteSupported() && publicUrl) {
+                const ok = await tryWriteNfcUrlRecord(publicUrl);
+                if (!ok) {
+                    setActivatePendingPublicUrl(publicUrl);
+                    setActivateNfcWriteError(dAct?.nfcWriteFailed ?? 'No se pudo escribir el enlace en la etiqueta.');
+                    loadDevices();
+                    loadProfiles();
+                    return;
+                }
+            }
+
             showToast('success', dDevices.activate.successToast);
-            setActivateOpen(false);
-            setActivateToken('');
-            setActivateProfileId('');
-            setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
+            closeActivateDialog();
             loadDevices();
             loadProfiles();
         } catch (err) {
@@ -173,6 +211,32 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         } finally {
             setActivating(false);
         }
+    };
+
+    const handleRetryActivateNfcWrite = async () => {
+        if (!activatePendingPublicUrl) return;
+        setActivating(true);
+        setActivateNfcWriteError(null);
+        try {
+            const ok = await tryWriteNfcUrlRecord(activatePendingPublicUrl);
+            if (ok) {
+                showToast('success', dDevices.activate.successToast);
+                closeActivateDialog();
+                loadDevices();
+                loadProfiles();
+            } else {
+                setActivateNfcWriteError(dAct?.nfcWriteFailed ?? 'No se pudo escribir el enlace en la etiqueta.');
+            }
+        } finally {
+            setActivating(false);
+        }
+    };
+
+    const handleSkipActivateNfcWrite = () => {
+        showToast('success', dDevices.activate.successToast);
+        closeActivateDialog();
+        loadDevices();
+        loadProfiles();
     };
 
     // ── Eliminar device ───────────────────────────────────────────────────────
@@ -471,12 +535,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             {/* ═══ Dialog: Activar + vincular device ═══ */}
             <Dialog
                 open={activateOpen}
-                onClose={() => {
-                    setActivateOpen(false);
-                    setActivateScanError(null);
-                    setActivateToken('');
-                    setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
-                }}
+                onClose={() => closeActivateDialog()}
                 maxWidth="xs"
                 fullWidth
             >
@@ -541,12 +600,38 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                                                     onClick={() => {
                                                         setActivateToken('');
                                                         setActivateScanError(null);
+                                                        setActivateNfcWriteError(null);
+                                                        setActivatePendingPublicUrl(null);
                                                         setInputMode('automatic');
                                                     }}
                                                 >
-                                                    {dict.dashboard?.activate?.retryScanner ?? 'Reintentar escáner'}
+                                                    {dAct?.retryScanner ?? 'Reintentar escáner'}
                                                 </Button>
                                             </Box>
+                                        )}
+                                        {isWebNfcWriteSupported() && dAct?.nfcWriteHint && (
+                                            <Alert severity="info">{dAct.nfcWriteHint}</Alert>
+                                        )}
+                                        {activateNfcWriteError && (
+                                            <Alert
+                                                severity="warning"
+                                                action={
+                                                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ py: 0.5 }}>
+                                                        <Button
+                                                            color="inherit"
+                                                            size="small"
+                                                            onClick={() => void handleRetryActivateNfcWrite()}
+                                                        >
+                                                            {dAct?.nfcRetryWrite ?? 'Reintentar escritura'}
+                                                        </Button>
+                                                        <Button color="inherit" size="small" onClick={handleSkipActivateNfcWrite}>
+                                                            {dAct?.nfcSkipWrite ?? 'Ir a perfiles sin escribir'}
+                                                        </Button>
+                                                    </Stack>
+                                                }
+                                            >
+                                                {activateNfcWriteError}
+                                            </Alert>
                                         )}
                                         <FormControl fullWidth>
                                             <InputLabel>{dDevices.activate.profileLabel}</InputLabel>
@@ -568,25 +653,18 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button
-                        onClick={() => {
-                            setActivateOpen(false);
-                            setActivateScanError(null);
-                            setActivateToken('');
-                            setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
-                        }}
-                        color="inherit"
-                    >
+                    <Button onClick={() => closeActivateDialog()} color="inherit">
                         {dict.account.profile.cancel}
                     </Button>
                     <Button
                         variant="contained"
-                        onClick={handleActivate}
+                        onClick={() => void handleActivate()}
                         disabled={
                             activating ||
                             !activateProfileId ||
                             profiles.length === 0 ||
-                            !activateToken.trim()
+                            !activateToken.trim() ||
+                            !!activatePendingPublicUrl
                         }
                     >
                         {activating ? <CircularProgress size={22} /> : dDevices.activate.submit}

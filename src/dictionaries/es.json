@@ -273,6 +273,10 @@
             "nfcUnsupportedApple": "En iPhone e iPad los navegadores (incluido Chrome) no permiten leer NFC desde la web. Introduce el código del dispositivo a mano o usa un móvil Android con Chrome.",
             "nfcCancelled": "Lectura NFC cancelada.",
             "nfcReadFailed": "No se pudo leer el tag. Acerca la etiqueta al teléfono e inténtalo de nuevo.",
+            "nfcWriteHint": "Después de enlazar, el teléfono te pedirá acercar otra vez la etiqueta para grabar el enlace a tu perfil público de emergencia.",
+            "nfcWriteFailed": "El dispositivo ya está vinculado, pero no se pudo escribir el enlace en la etiqueta. Acerca la etiqueta al teléfono y reintenta.",
+            "nfcRetryWrite": "Reintentar escritura",
+            "nfcSkipWrite": "Ir a perfiles sin escribir",
             "noProfiles": "Aún no tienes perfiles. Crea uno con la opción B o desde Perfiles.",
             "deviceTypeLabel": "Tipo de dispositivo"
         }

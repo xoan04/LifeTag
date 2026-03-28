@@ -20,7 +20,15 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useRouter } from 'next/navigation';
 import { Profile } from '@/models/profile';
 import { ENABLE_SCANNER } from '@/lib/featureFlags';
-import { readNfcTagOnce, isWebNfcSupported, isAppleMobileWeb, classifyNfcFailure } from '@/lib/nfcWeb';
+import {
+    readNfcTagOnce,
+    isWebNfcSupported,
+    isWebNfcWriteSupported,
+    isAppleMobileWeb,
+    classifyNfcFailure,
+    normalizeNfcDeviceToken,
+    tryWriteNfcUrlRecord,
+} from '@/lib/nfcWeb';
 import { ProfileUseCases } from '@/useCases/profileUseCases';
 import { DeviceUseCases } from '@/useCases/deviceUseCases';
 
@@ -44,6 +52,8 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
     const [loading, setLoading] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
     const [linkError, setLinkError] = useState<string | null>(null);
+    const [nfcWriteError, setNfcWriteError] = useState<string | null>(null);
+    const [pendingPublicUrl, setPendingPublicUrl] = useState<string | null>(null);
 
     const loadProfiles = useCallback(async () => {
         setLoadingProfiles(true);
@@ -84,10 +94,27 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
 
     const handleNfcLinkDevice = async () => {
         if (!deviceId.trim() || !selectedProfileId) return;
+        const token = normalizeNfcDeviceToken(deviceId);
         setLoading(true);
         setLinkError(null);
+        setNfcWriteError(null);
+        setPendingPublicUrl(null);
+        const publicUrl =
+            typeof window !== 'undefined'
+                ? `${window.location.origin}/${lang}/id/${selectedProfileId}`
+                : `/${lang}/id/${selectedProfileId}`;
         try {
-            await DeviceUseCases.registerAndActivate(deviceId.trim(), 'NFC_TAG', selectedProfileId);
+            await DeviceUseCases.registerAndActivate(token, 'NFC_TAG', selectedProfileId);
+
+            if (isWebNfcWriteSupported()) {
+                const ok = await tryWriteNfcUrlRecord(publicUrl);
+                if (!ok) {
+                    setPendingPublicUrl(publicUrl);
+                    setNfcWriteError(dAct.nfcWriteFailed);
+                    return;
+                }
+            }
+
             router.push(`/${lang}/dashboard/profiles`);
         } catch (err) {
             setLinkError(
@@ -99,6 +126,29 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRetryNfcWrite = async () => {
+        if (!pendingPublicUrl) return;
+        setLoading(true);
+        setNfcWriteError(null);
+        try {
+            const ok = await tryWriteNfcUrlRecord(pendingPublicUrl);
+            if (ok) {
+                setPendingPublicUrl(null);
+                router.push(`/${lang}/dashboard/profiles`);
+            } else {
+                setNfcWriteError(dAct.nfcWriteFailed);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSkipNfcWrite = () => {
+        setPendingPublicUrl(null);
+        setNfcWriteError(null);
+        router.push(`/${lang}/dashboard/profiles`);
     };
 
     return (
@@ -191,7 +241,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                         label={dAct.enterCodePlaceholder}
                                         value={deviceId}
                                         onChange={(e) => setDeviceId(e.target.value.toUpperCase())}
-                                        placeholder="NFC / ID en placa"
+                                        placeholder="04:87:A2:B2:B5:51:80"
                                         InputProps={{
                                             startAdornment: <TagIcon color="action" sx={{ mr: 1 }} />,
                                         }}
@@ -220,6 +270,29 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                     {linkError && (
                                         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setLinkError(null)}>
                                             {linkError}
+                                        </Alert>
+                                    )}
+                                    {isWebNfcWriteSupported() && (
+                                        <Alert severity="info" sx={{ mb: 2 }}>
+                                            {dAct.nfcWriteHint}
+                                        </Alert>
+                                    )}
+                                    {nfcWriteError && (
+                                        <Alert
+                                            severity="warning"
+                                            sx={{ mb: 2 }}
+                                            action={
+                                                <Stack direction="row" spacing={1} flexWrap="wrap">
+                                                    <Button color="inherit" size="small" onClick={() => void handleRetryNfcWrite()}>
+                                                        {dAct.nfcRetryWrite}
+                                                    </Button>
+                                                    <Button color="inherit" size="small" onClick={handleSkipNfcWrite}>
+                                                        {dAct.nfcSkipWrite}
+                                                    </Button>
+                                                </Stack>
+                                            }
+                                        >
+                                            {nfcWriteError}
                                         </Alert>
                                     )}
                                     <TextField
@@ -257,7 +330,8 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                             !selectedProfileId ||
                                             loading ||
                                             loadingProfiles ||
-                                            profiles.length === 0
+                                            profiles.length === 0 ||
+                                            !!pendingPublicUrl
                                         }
                                     >
                                         {loading ? (
@@ -279,7 +353,9 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                     disabled={!deviceId.trim()}
                                     onClick={() =>
                                         router.push(
-                                            `/${lang}/dashboard/profiles/new?tagId=${encodeURIComponent(deviceId.trim())}`
+                                            `/${lang}/dashboard/profiles/new?tagId=${encodeURIComponent(
+                                                normalizeNfcDeviceToken(deviceId)
+                                            )}`
                                         )
                                     }
                                 >

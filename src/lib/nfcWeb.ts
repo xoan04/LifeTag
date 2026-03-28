@@ -70,6 +70,65 @@ export function normalizeNfcUid(serial: string): string {
     return serial.replace(/:/g, '').toUpperCase();
 }
 
+/**
+ * UID del chip en hex con separador `:` por byte (p. ej. 04:87:A2:B2:B5:51:80).
+ */
+export function formatNfcUidColons(serial: string): string {
+    const hex = serial.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+    if (hex.length < 2) return serial.trim().toUpperCase();
+    const pairs: string[] = [];
+    for (let i = 0; i < hex.length; i += 2) {
+        pairs.push(hex.slice(i, i + 2));
+    }
+    return pairs.join(':');
+}
+
+type NfcNdefWriterClass = new () => {
+    write: (options: { records: Array<{ recordType: string; data: string }> }) => Promise<void>;
+};
+
+export function isWebNfcWriteSupported(): boolean {
+    return typeof window !== 'undefined' && 'NDEFWriter' in window;
+}
+
+/**
+ * Graba un registro NDEF URL en la etiqueta (p. ej. abrir el perfil público al acercar el móvil).
+ * Requiere Chrome/Android con NFC y un segundo acercamiento tras la lectura.
+ */
+export async function writeNfcUrlRecord(absoluteUrl: string): Promise<void> {
+    if (!isWebNfcWriteSupported()) {
+        throw new Error('unsupported');
+    }
+    const NDEFWriterClass = (window as unknown as { NDEFWriter: NfcNdefWriterClass }).NDEFWriter;
+    const writer = new NDEFWriterClass();
+    await writer.write({
+        records: [{ recordType: 'url', data: absoluteUrl }],
+    });
+}
+
+/**
+ * Si el valor es solo hex (UID NFC), formato `04:87:…`; si no, código tal cual (placas alfanuméricas).
+ */
+export function normalizeNfcDeviceToken(raw: string): string {
+    const trimmed = raw.trim();
+    const hexOnly = trimmed.replace(/[^0-9A-Fa-f]/g, '');
+    if (/^[0-9A-Fa-f]+$/.test(hexOnly) && hexOnly.length >= 8) {
+        return formatNfcUidColons(hexOnly);
+    }
+    return trimmed.toUpperCase();
+}
+
+/** Intenta escribir la URL en el tag; si no hay soporte de escritura, considera éxito sin hacer nada. */
+export async function tryWriteNfcUrlRecord(absoluteUrl: string): Promise<boolean> {
+    if (!isWebNfcWriteSupported()) return true;
+    try {
+        await writeNfcUrlRecord(absoluteUrl);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 function tokenFromUrl(url: string): string {
     try {
         const u = new URL(url);
@@ -110,7 +169,7 @@ export async function readNfcTagOnce(): Promise<string> {
             const { serialNumber, message } = event as NfcReadingEvent;
 
             if (serialNumber && serialNumber.replace(/:/g, '').length > 0) {
-                finish(() => resolve(normalizeNfcUid(serialNumber)));
+                finish(() => resolve(formatNfcUidColons(serialNumber)));
                 return;
             }
 
