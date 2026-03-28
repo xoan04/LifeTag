@@ -69,7 +69,7 @@ function SkeletonEmergencyView() {
                 className="h-48 rounded-b-[1.75rem] shadow-lg"
                 style={{ background: `linear-gradient(180deg, ${R.headerFrom} 0%, ${R.headerTo} 100%)` }}
             />
-            <div className="mx-auto -mt-5 w-full max-w-md space-y-3 px-4 pb-10">
+            <div className="mx-auto mt-4 w-full max-w-md space-y-3 px-4 pb-10">
                 <div className="h-28 rounded-2xl bg-white/80 shadow-sm ring-1 ring-slate-200/80" />
                 <div className="h-32 rounded-2xl bg-white/80 shadow-sm ring-1 ring-slate-200/80" />
                 <div className="h-24 rounded-2xl bg-white/80 shadow-sm ring-1 ring-slate-200/80" />
@@ -91,7 +91,7 @@ function EmergencyHeader({ profile, d, lang }: { profile: EmergencyProfile; d: a
     const isHuman = profile.type === 'HUMAN';
     return (
         <header
-            className="relative overflow-hidden rounded-b-[1.75rem] px-4 pb-6 pt-8 text-white shadow-[0_10px_28px_rgba(92,16,16,0.35)]"
+            className="relative z-0 overflow-hidden rounded-b-[1.75rem] px-4 pb-6 pt-8 text-white shadow-[0_10px_28px_rgba(92,16,16,0.35)]"
             style={{ background: `linear-gradient(180deg, ${R.headerFrom} 0%, ${R.headerTo} 100%)` }}
         >
             <button
@@ -416,7 +416,7 @@ export default function PublicEmergencyClient({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28 }}
-                className="mx-auto -mt-5 w-full max-w-md space-y-3 px-4"
+                className="relative z-10 mx-auto mt-4 w-full max-w-md space-y-3 px-4"
             >
                 {profile.type === 'HUMAN' && <AllergyAlert allergies={profile.allergies} d={d} />}
 
