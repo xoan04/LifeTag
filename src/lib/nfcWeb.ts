@@ -3,6 +3,8 @@
  * Soportado principalmente en Chrome para Android con hardware NFC.
  */
 
+const LOG = '[LifeTag NFC]';
+
 /** Tipos mínimos (lib.dom puede no incluir Web NFC según versión de TypeScript). */
 interface NfcNdefRecord {
     recordType: string;
@@ -97,24 +99,71 @@ type NfcNdefWriterClass = new () => {
 };
 
 export function isWebNfcWriteSupported(): boolean {
-    return typeof window !== 'undefined' && 'NDEFWriter' in window;
+    if (typeof window === 'undefined') return false;
+    // API actual: NDEFReader.write (Chrome/Android). La antigua NDEFWriter puede no respetar overwrite.
+    if ('NDEFReader' in window) {
+        try {
+            const R = (window as unknown as { NDEFReader: new () => { write?: unknown } }).NDEFReader;
+            if (typeof new R().write === 'function') return true;
+        } catch {
+            /* ignore */
+        }
+    }
+    return 'NDEFWriter' in window;
 }
+
+const urlRecordMessage = (absoluteUrl: string) => ({
+    records: [{ recordType: 'url', data: absoluteUrl }] as Array<{ recordType: string; data: string }>,
+});
+
+const writeOptions: NfcNdefWriteOptions = { overwrite: true };
 
 /**
  * Graba un registro NDEF URL en la etiqueta (p. ej. abrir el perfil público al acercar el móvil).
  * Con `overwrite: true` el mensaje anterior del tag se sustituye por completo (solo queda esta URL).
+ * Usa NDEFReader.write cuando exista; si overwrite es false y el tag ya tiene NDEF, el navegador rechaza la escritura.
  * Requiere Chrome/Android con NFC y un segundo acercamiento tras la lectura.
  */
 export async function writeNfcUrlRecord(absoluteUrl: string): Promise<void> {
     if (!isWebNfcWriteSupported()) {
         throw new Error('unsupported');
     }
-    const NDEFWriterClass = (window as unknown as { NDEFWriter: NfcNdefWriterClass }).NDEFWriter;
-    const writer = new NDEFWriterClass();
-    await writer.write(
-        { records: [{ recordType: 'url', data: absoluteUrl }] },
-        { overwrite: true }
-    );
+
+    const message = urlRecordMessage(absoluteUrl);
+    console.log(`${LOG} escribir → nuevo dato (URL pública en el tag)`, {
+        url: absoluteUrl,
+        overwrite: writeOptions.overwrite,
+        records: message.records,
+    });
+
+    if ('NDEFReader' in window) {
+        try {
+            const R = (window as unknown as {
+                NDEFReader: new () => {
+                    write?: (m: typeof message, o?: NfcNdefWriteOptions) => Promise<void>;
+                };
+            }).NDEFReader;
+            const ndef = new R();
+            if (typeof ndef.write === 'function') {
+                await ndef.write(message, writeOptions);
+                console.log(`${LOG} escritura OK (NDEFReader.write)`);
+                return;
+            }
+        } catch (e) {
+            console.warn(`${LOG} NDEFReader.write falló, probando legado si existe`, e);
+            /* intentar legado */
+        }
+    }
+
+    if ('NDEFWriter' in window) {
+        const NDEFWriterClass = (window as unknown as { NDEFWriter: NfcNdefWriterClass }).NDEFWriter;
+        const writer = new NDEFWriterClass();
+        await writer.write(message, writeOptions);
+        console.log(`${LOG} escritura OK (NDEFWriter legado)`);
+        return;
+    }
+
+    throw new Error('unsupported');
 }
 
 /**
@@ -131,11 +180,15 @@ export function normalizeNfcDeviceToken(raw: string): string {
 
 /** Intenta escribir la URL en el tag; si no hay soporte de escritura, considera éxito sin hacer nada. */
 export async function tryWriteNfcUrlRecord(absoluteUrl: string): Promise<boolean> {
-    if (!isWebNfcWriteSupported()) return true;
+    if (!isWebNfcWriteSupported()) {
+        console.log(`${LOG} tryWrite: sin API de escritura en este navegador; se omite (éxito lógico)`);
+        return true;
+    }
     try {
         await writeNfcUrlRecord(absoluteUrl);
         return true;
-    } catch {
+    } catch (err) {
+        console.error(`${LOG} tryWrite: falló la escritura`, { url: absoluteUrl, err });
         return false;
     }
 }
@@ -179,8 +232,26 @@ export async function readNfcTagOnce(): Promise<string> {
         const onReading = (event: Event) => {
             const { serialNumber, message } = event as NfcReadingEvent;
 
+            const ndefRecords = message.records.map((r) => {
+                const base = { recordType: r.recordType };
+                if (r.recordType === 'text') {
+                    return { ...base, decodedText: decodeNdefText(r) };
+                }
+                if (r.recordType === 'url') {
+                    return { ...base, decodedUrl: decodeNdefUrl(r) };
+                }
+                return base;
+            });
+
+            console.log(`${LOG} lectura del tag (raw)`, {
+                serialNumberDelLector: serialNumber || null,
+                ndefRecords,
+            });
+
             if (serialNumber && serialNumber.replace(/:/g, '').length > 0) {
-                finish(() => resolve(formatNfcUidColons(serialNumber)));
+                const token = formatNfcUidColons(serialNumber);
+                console.log(`${LOG} token usado (origen: UID del chip)`, token);
+                finish(() => resolve(token));
                 return;
             }
 
@@ -188,7 +259,9 @@ export async function readNfcTagOnce(): Promise<string> {
                 if (record.recordType === 'text') {
                     const t = decodeNdefText(record);
                     if (t) {
-                        finish(() => resolve(t.replace(/\s+/g, '')));
+                        const raw = t.replace(/\s+/g, '');
+                        console.log(`${LOG} token usado (origen: NDEF text)`, { raw, normalizado: raw });
+                        finish(() => resolve(raw));
                         return;
                     }
                 }
@@ -197,13 +270,19 @@ export async function readNfcTagOnce(): Promise<string> {
                     if (u) {
                         const token = tokenFromUrl(u);
                         if (token) {
-                            finish(() => resolve(token.toUpperCase()));
+                            const out = token.toUpperCase();
+                            console.log(`${LOG} token usado (origen: NDEF url)`, {
+                                urlDecodificada: u,
+                                tokenExtraido: out,
+                            });
+                            finish(() => resolve(out));
                             return;
                         }
                     }
                 }
             }
 
+            console.warn(`${LOG} no se obtuvo UID ni NDEF text/url útil`, { ndefRecords });
             finish(() => reject(new Error('empty')));
         };
 

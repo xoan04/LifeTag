@@ -184,6 +184,11 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             typeof window !== 'undefined'
                 ? `${window.location.origin}/${lang}/id/${activateProfileId}`
                 : '';
+        console.log('[LifeTag NFC] activar/vincular (UI)', {
+            tokenNormalizado: token,
+            profileId: activateProfileId,
+            publicUrlNuevo: publicUrl,
+        });
         setActivating(true);
         setActivateNfcWriteError(null);
         setActivatePendingPublicUrl(null);

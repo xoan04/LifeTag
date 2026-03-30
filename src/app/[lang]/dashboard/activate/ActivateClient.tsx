@@ -105,6 +105,11 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
             typeof window !== 'undefined'
                 ? `${window.location.origin}/${lang}/id/${selectedProfileId}`
                 : `/${lang}/id/${selectedProfileId}`;
+        console.log('[LifeTag NFC] activar/vincular (UI)', {
+            tokenNormalizado: token,
+            profileId: selectedProfileId,
+            publicUrlNuevo: publicUrl,
+        });
         try {
             await DeviceUseCases.registerAndActivate(token, selectedProfileId, formFactor);
 

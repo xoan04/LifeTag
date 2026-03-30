@@ -15,6 +15,8 @@ import {
 
 const REGISTER_ERROR_MAP: Record<string, string> = {
     'already registered': 'errorAlreadyExists',
+    'already exists': 'errorAlreadyExists',
+    'ya registrado': 'errorAlreadyExists',
     'demo': 'errorDemo',
     'limit': 'errorLimit',
 };
@@ -24,6 +26,9 @@ const ACTIVATE_ERROR_MAP: Record<string, string> = {
     'already': 'errorAlreadyActive',
     'limit': 'errorProfileLimit',
 };
+
+/** Lo que lanza `registerDevice` cuando el token NFC ya existe (mismo mensaje que `mapError`). */
+const REGISTER_ALREADY_EXISTS_KEY = '__errorAlreadyExists';
 
 function mapError(
     message: string,
@@ -106,7 +111,14 @@ export class DeviceUseCases {
             registerBody.formFactor = formFactor;
             activateBody.formFactor = formFactor;
         }
-        await this.registerDevice(registerBody);
+        try {
+            await this.registerDevice(registerBody);
+        } catch (err) {
+            // Tag ya registrado: seguir con activate para reasignar perfil y poder grabar la URL pública nueva.
+            if (!(err instanceof Error && err.message === REGISTER_ALREADY_EXISTS_KEY)) {
+                throw err;
+            }
+        }
         const { device } = await this.activateDevice(activateBody);
         return device;
     }
