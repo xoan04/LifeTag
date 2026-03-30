@@ -51,6 +51,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
     const [inputMode, setInputMode] = useState<'automatic' | 'manual'>(ENABLE_SCANNER ? 'automatic' : 'manual');
     const [isScanning, setIsScanning] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [nfcWriteInProgress, setNfcWriteInProgress] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
     const [linkError, setLinkError] = useState<string | null>(null);
     const [nfcWriteError, setNfcWriteError] = useState<string | null>(null);
@@ -128,17 +129,6 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
         });
         try {
             await DeviceUseCases.registerAndActivate(token, selectedProfileId, formFactor);
-
-            if (isWebNfcWriteSupported()) {
-                const ok = await tryWriteNfcUrlRecord(publicUrl);
-                if (!ok) {
-                    setPendingPublicUrl(publicUrl);
-                    setNfcWriteError(dAct.nfcWriteFailed);
-                    return;
-                }
-            }
-
-            router.push(`/${lang}/dashboard/profiles`);
         } catch (err) {
             setLinkError(
                 DeviceUseCases.resolveErrorMessage(err, {
@@ -146,25 +136,44 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                     ...dDevices.activate,
                 })
             );
+            return;
         } finally {
+            // API lista; la escritura NFC pide un segundo acercamiento y no debe dejar el formulario en loading infinito.
             setLoading(false);
         }
+
+        if (isWebNfcWriteSupported()) {
+            setNfcWriteInProgress(true);
+            try {
+                const ok = await tryWriteNfcUrlRecord(publicUrl);
+                if (!ok) {
+                    setPendingPublicUrl(publicUrl);
+                    setNfcWriteError(dAct.nfcWriteFailed);
+                    return;
+                }
+            } finally {
+                setNfcWriteInProgress(false);
+            }
+        }
+
+        router.push(`/${lang}/dashboard/profiles`);
     };
 
     const handleRetryNfcWrite = async () => {
         if (!pendingPublicUrl) return;
-        setLoading(true);
         setNfcWriteError(null);
+        setNfcWriteInProgress(true);
+        let ok = false;
         try {
-            const ok = await tryWriteNfcUrlRecord(pendingPublicUrl);
-            if (ok) {
-                setPendingPublicUrl(null);
-                router.push(`/${lang}/dashboard/profiles`);
-            } else {
-                setNfcWriteError(dAct.nfcWriteFailed);
-            }
+            ok = await tryWriteNfcUrlRecord(pendingPublicUrl);
         } finally {
-            setLoading(false);
+            setNfcWriteInProgress(false);
+        }
+        if (ok) {
+            setPendingPublicUrl(null);
+            router.push(`/${lang}/dashboard/profiles`);
+        } else {
+            setNfcWriteError(dAct.nfcWriteFailed);
         }
     };
 
@@ -310,7 +319,11 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                         </Alert>
                                     )}
                                     {isWebNfcWriteSupported() && (
-                                        <Alert severity="info" sx={{ mb: 2 }}>
+                                        <Alert
+                                            severity="info"
+                                            sx={{ mb: 2 }}
+                                            icon={nfcWriteInProgress ? <CircularProgress size={20} /> : undefined}
+                                        >
                                             {dAct.nfcWriteHint}
                                         </Alert>
                                     )}
@@ -366,12 +379,13 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                             !deviceId.trim() ||
                                             !selectedProfileId ||
                                             loading ||
+                                            nfcWriteInProgress ||
                                             loadingProfiles ||
                                             profiles.length === 0 ||
                                             !!pendingPublicUrl
                                         }
                                     >
-                                        {loading ? (
+                                        {loading || nfcWriteInProgress ? (
                                             <CircularProgress size={24} color="inherit" />
                                         ) : (
                                             dAct.linkExisting

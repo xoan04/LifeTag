@@ -69,6 +69,8 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     const [activateToken, setActivateToken] = useState('');
     const [activateProfileId, setActivateProfileId] = useState('');
     const [activating, setActivating] = useState(false);
+    /** Tras registrar en API: esperando 2.º acercamiento para grabar URL (no bloquea con el mismo spinner que el POST). */
+    const [nfcWriteInProgress, setNfcWriteInProgress] = useState(false);
     const [activateNfcWriteError, setActivateNfcWriteError] = useState<string | null>(null);
     const [activatePendingPublicUrl, setActivatePendingPublicUrl] = useState<string | null>(null);
     const [activateFormFactor, setActivateFormFactor] = useState<NfcFormFactor>('NFC_BAND');
@@ -194,6 +196,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         setActivateProfileId('');
         setActivateFormFactor('NFC_BAND');
         setInputMode(ENABLE_SCANNER ? 'automatic' : 'manual');
+        setNfcWriteInProgress(false);
     };
 
     // ── Activar + vincular device (+ escritura NDEF URL del perfil público) ───
@@ -214,20 +217,6 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
         setActivatePendingPublicUrl(null);
         try {
             await DeviceUseCases.registerAndActivate(token, activateProfileId, activateFormFactor);
-
-            if (isWebNfcWriteSupported() && publicUrl) {
-                const ok = await tryWriteNfcUrlRecord(publicUrl);
-                if (!ok) {
-                    setActivatePendingPublicUrl(publicUrl);
-                    setActivateNfcWriteError(dAct?.nfcWriteFailed ?? 'No se pudo escribir el enlace en la etiqueta.');
-                    loadDevices();
-                    loadProfiles();
-                    return;
-                }
-            }
-
-            showToast('success', dDevices.activate.successToast);
-            closeActivateDialog();
             loadDevices();
             loadProfiles();
         } catch (err) {
@@ -235,27 +224,55 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                 ...dDevices.register,
                 ...dDevices.activate,
             }));
+            return;
         } finally {
+            // El registro en API ya terminó; no bloquear el botón mientras se espera el 2.º toque NFC para escribir la URL.
             setActivating(false);
         }
+
+        if (!activateDialogOpenRef.current) return;
+
+        if (isWebNfcWriteSupported() && publicUrl) {
+            setNfcWriteInProgress(true);
+            try {
+                const ok = await tryWriteNfcUrlRecord(publicUrl);
+                if (!activateDialogOpenRef.current) return;
+                if (!ok) {
+                    setActivatePendingPublicUrl(publicUrl);
+                    setActivateNfcWriteError(dAct?.nfcWriteFailed ?? 'No se pudo escribir el enlace en la etiqueta.');
+                    loadDevices();
+                    loadProfiles();
+                    return;
+                }
+            } finally {
+                setNfcWriteInProgress(false);
+            }
+        }
+
+        showToast('success', dDevices.activate.successToast);
+        closeActivateDialog();
+        loadDevices();
+        loadProfiles();
     };
 
     const handleRetryActivateNfcWrite = async () => {
         if (!activatePendingPublicUrl) return;
-        setActivating(true);
         setActivateNfcWriteError(null);
+        setNfcWriteInProgress(true);
+        let ok = false;
         try {
-            const ok = await tryWriteNfcUrlRecord(activatePendingPublicUrl);
-            if (ok) {
-                showToast('success', dDevices.activate.successToast);
-                closeActivateDialog();
-                loadDevices();
-                loadProfiles();
-            } else {
-                setActivateNfcWriteError(dAct?.nfcWriteFailed ?? 'No se pudo escribir el enlace en la etiqueta.');
-            }
+            ok = await tryWriteNfcUrlRecord(activatePendingPublicUrl);
         } finally {
-            setActivating(false);
+            setNfcWriteInProgress(false);
+        }
+        if (!activateDialogOpenRef.current) return;
+        if (ok) {
+            showToast('success', dDevices.activate.successToast);
+            closeActivateDialog();
+            loadDevices();
+            loadProfiles();
+        } else {
+            setActivateNfcWriteError(dAct?.nfcWriteFailed ?? 'No se pudo escribir el enlace en la etiqueta.');
         }
     };
 
@@ -571,6 +588,11 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                 <DialogContent>
                     <Stack spacing={2} mt={1}>
                         <Alert severity="info">{dDevices.activate.nfcHint}</Alert>
+                        {nfcWriteInProgress && dAct?.nfcWriteHint && (
+                            <Alert severity="info" icon={<CircularProgress size={20} />}>
+                                {dAct.nfcWriteHint}
+                            </Alert>
+                        )}
                                 {!activateToken && ENABLE_SCANNER && inputMode === 'automatic' ? (
                                     <Box display="flex" flexDirection="column" alignItems="center" gap={2} pt={1}>
                                         {isAppleMobileWeb() && dict.dashboard?.activate?.nfcUnsupportedApple && (
@@ -702,13 +724,18 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                         onClick={() => void handleActivate()}
                         disabled={
                             activating ||
+                            nfcWriteInProgress ||
                             !activateProfileId ||
                             profiles.length === 0 ||
                             !activateToken.trim() ||
                             !!activatePendingPublicUrl
                         }
                     >
-                        {activating ? <CircularProgress size={22} /> : dDevices.activate.submit}
+                        {activating || nfcWriteInProgress ? (
+                            <CircularProgress size={22} />
+                        ) : (
+                            dDevices.activate.submit
+                        )}
                     </Button>
                 </DialogActions>
             </Dialog>
