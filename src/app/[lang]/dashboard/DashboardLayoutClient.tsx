@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Box, AppBar, Toolbar, Typography, Button, Container, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, Divider } from '@mui/material';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import NfcIcon from '@mui/icons-material/Nfc';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthUseCases } from '@/useCases/authUseCases';
@@ -35,6 +36,11 @@ export default function DashboardLayoutClient({ children, dictionary, lang }: { 
                 <ListItem disablePadding>
                     <ListItemButton sx={{ textAlign: 'center' }} onClick={() => router.push(`/${lang}/dashboard/profiles`)}>
                         <ListItemText primary={dictionary.dashboard.nav.profiles} primaryTypographyProps={{ fontWeight: pathname.includes('/dashboard/profiles') ? 700 : 400 }} />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton sx={{ textAlign: 'center' }} onClick={() => router.push(`/${lang}/dashboard/activate`)}>
+                        <ListItemText primary={dictionary.dashboard.home.activateDevice} primaryTypographyProps={{ fontWeight: pathname.includes('/dashboard/activate') ? 700 : 400 }} />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -85,6 +91,14 @@ export default function DashboardLayoutClient({ children, dictionary, lang }: { 
                             sx={{ fontWeight: pathname.includes('/dashboard/profiles') ? 700 : 400 }}
                         >
                             {dictionary.dashboard.nav.profiles}
+                        </Button>
+                        <Button
+                            color="inherit"
+                            startIcon={<NfcIcon sx={{ fontSize: 18 }} />}
+                            onClick={() => router.push(`/${lang}/dashboard/activate`)}
+                            sx={{ fontWeight: pathname.includes('/dashboard/activate') ? 700 : 400 }}
+                        >
+                            {dictionary.dashboard.home.activateDevice}
                         </Button>
                         <Button
                             color="inherit"

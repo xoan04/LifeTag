@@ -12,6 +12,10 @@ import {
     Alert,
     Stack,
     Divider,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from '@mui/material';
 import NfcIcon from '@mui/icons-material/Nfc';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
@@ -34,8 +38,7 @@ import { DeviceUseCases } from '@/useCases/deviceUseCases';
 import { NFC_FORM_FACTORS, type NfcFormFactor } from '@/models/device';
 
 /**
- * Solo vinculación de etiquetas NFC físicas.
- * El QR de la página pública se muestra en cada tarjeta de perfil (no es un dispositivo registrado).
+ * Vista completa: vincular etiqueta NFC. La lectura/escritura física va en modales.
  */
 export default function ActivateClient({ dictionary, lang }: { dictionary: any; lang: string }) {
     const router = useRouter();
@@ -58,6 +61,10 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
     const [pendingPublicUrl, setPendingPublicUrl] = useState<string | null>(null);
     const [formFactor, setFormFactor] = useState<NfcFormFactor>('NFC_BAND');
 
+    const [readModalOpen, setReadModalOpen] = useState(false);
+    const [writeModalOpen, setWriteModalOpen] = useState(false);
+    const readScanAbortRef = useRef<AbortController | null>(null);
+
     const loadProfiles = useCallback(async () => {
         setLoadingProfiles(true);
         setProfilesLoadError(null);
@@ -74,31 +81,37 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
         void loadProfiles();
     }, [loadProfiles]);
 
-    const scanAbortRef = useRef<AbortController | null>(null);
-
     useEffect(() => {
         return () => {
-            scanAbortRef.current?.abort();
-            scanAbortRef.current = null;
+            readScanAbortRef.current?.abort();
+            readScanAbortRef.current = null;
         };
     }, []);
 
-    const handleScanNFC = async () => {
+    const closeReadModal = () => {
+        readScanAbortRef.current?.abort();
+        readScanAbortRef.current = null;
+        setIsScanning(false);
+        setReadModalOpen(false);
+    };
+
+    /** Lectura NFC solo dentro del modal (evita escaneos “fantasma” fuera del flujo). */
+    const handleStartReadInModal = async () => {
         setScanError(null);
-        setLinkError(null);
         if (!isWebNfcSupported()) {
             setScanError(isAppleMobileWeb() ? dAct.nfcUnsupportedApple : dAct.nfcUnsupported);
             return;
         }
-        scanAbortRef.current?.abort();
+        readScanAbortRef.current?.abort();
         const ac = new AbortController();
-        scanAbortRef.current = ac;
+        readScanAbortRef.current = ac;
         setIsScanning(true);
         try {
             const token = await readNfcTagOnce(ac.signal);
             if (ac.signal.aborted) return;
             setDeviceId(token);
             setInputMode('manual');
+            closeReadModal();
         } catch (err) {
             if (err instanceof DOMException && err.name === 'AbortError') return;
             if (err instanceof Error && err.name === 'AbortError') return;
@@ -107,7 +120,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
             else setScanError(dAct.nfcReadFailed);
         } finally {
             setIsScanning(false);
-            if (scanAbortRef.current === ac) scanAbortRef.current = null;
+            if (readScanAbortRef.current === ac) readScanAbortRef.current = null;
         }
     };
 
@@ -122,11 +135,6 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
             typeof window !== 'undefined'
                 ? `${window.location.origin}/${lang}/id/${selectedProfileId}`
                 : `/${lang}/id/${selectedProfileId}`;
-        console.log('[LifeTag NFC] activar/vincular (UI)', {
-            tokenNormalizado: token,
-            profileId: selectedProfileId,
-            publicUrlNuevo: publicUrl,
-        });
         try {
             await DeviceUseCases.registerAndActivate(token, selectedProfileId, formFactor);
         } catch (err) {
@@ -138,12 +146,13 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
             );
             return;
         } finally {
-            // API lista; la escritura NFC pide un segundo acercamiento y no debe dejar el formulario en loading infinito.
             setLoading(false);
         }
 
         if (isWebNfcWriteSupported()) {
+            setWriteModalOpen(true);
             setNfcWriteInProgress(true);
+            await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
             try {
                 const ok = await tryWriteNfcUrlRecord(publicUrl);
                 if (!ok) {
@@ -153,6 +162,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                 }
             } finally {
                 setNfcWriteInProgress(false);
+                setWriteModalOpen(false);
             }
         }
 
@@ -162,29 +172,33 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
     const handleRetryNfcWrite = async () => {
         if (!pendingPublicUrl) return;
         setNfcWriteError(null);
+        setWriteModalOpen(true);
         setNfcWriteInProgress(true);
-        let ok = false;
+        await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
         try {
-            ok = await tryWriteNfcUrlRecord(pendingPublicUrl);
+            const ok = await tryWriteNfcUrlRecord(pendingPublicUrl);
+            if (ok) {
+                setPendingPublicUrl(null);
+                setWriteModalOpen(false);
+                router.push(`/${lang}/dashboard/profiles`);
+            } else {
+                setNfcWriteError(dAct.nfcWriteFailed);
+            }
         } finally {
             setNfcWriteInProgress(false);
-        }
-        if (ok) {
-            setPendingPublicUrl(null);
-            router.push(`/${lang}/dashboard/profiles`);
-        } else {
-            setNfcWriteError(dAct.nfcWriteFailed);
+            setWriteModalOpen(false);
         }
     };
 
     const handleSkipNfcWrite = () => {
         setPendingPublicUrl(null);
         setNfcWriteError(null);
+        setWriteModalOpen(false);
         router.push(`/${lang}/dashboard/profiles`);
     };
 
     return (
-        <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+        <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4, px: 2, pb: 6 }}>
             <Typography variant="h2" mb={1} textAlign="center">
                 {dictionary.dashboard.activate.title}
             </Typography>
@@ -195,7 +209,7 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
             <Card sx={{ p: 2 }}>
                 <CardContent>
                     <Stack spacing={3}>
-                        <Alert severity="info">{dDevices.activate.nfcHint}</Alert>
+                        <Alert severity="info">{dAct.combinedFlowIntro ?? dDevices.activate.nfcHint}</Alert>
 
                         {!deviceId && ENABLE_SCANNER && inputMode === 'automatic' ? (
                             <Box display="flex" flexDirection="column" alignItems="center" gap={2} py={2}>
@@ -216,20 +230,18 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                         {dAct.nfcUnsupportedApple}
                                     </Alert>
                                 )}
-                                {scanError && (
-                                    <Alert severity="warning" onClose={() => setScanError(null)} sx={{ width: '100%' }}>
-                                        {scanError}
-                                    </Alert>
-                                )}
                                 <Button
                                     variant="outlined"
                                     color="secondary"
                                     size="large"
                                     fullWidth
-                                    startIcon={isScanning ? <CircularProgress size={20} /> : <NfcIcon />}
+                                    startIcon={<NfcIcon />}
                                     sx={{ py: 2 }}
-                                    onClick={() => void handleScanNFC()}
-                                    disabled={isScanning || !isWebNfcSupported()}
+                                    onClick={() => {
+                                        setScanError(null);
+                                        setReadModalOpen(true);
+                                    }}
+                                    disabled={!isWebNfcSupported()}
                                     title={
                                         !isWebNfcSupported()
                                             ? isAppleMobileWeb()
@@ -243,7 +255,6 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                 <Button
                                     variant="text"
                                     startIcon={<KeyboardIcon />}
-                                    disabled={isScanning}
                                     onClick={() => setInputMode('manual')}
                                 >
                                     {dAct.enterCode}
@@ -316,15 +327,6 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                                     {linkError && (
                                         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setLinkError(null)}>
                                             {linkError}
-                                        </Alert>
-                                    )}
-                                    {isWebNfcWriteSupported() && (
-                                        <Alert
-                                            severity="info"
-                                            sx={{ mb: 2 }}
-                                            icon={nfcWriteInProgress ? <CircularProgress size={20} /> : undefined}
-                                        >
-                                            {dAct.nfcWriteHint}
                                         </Alert>
                                     )}
                                     {nfcWriteError && (
@@ -417,6 +419,49 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
                     </Stack>
                 </CardContent>
             </Card>
+
+            {/* Modal: acercar etiqueta para LEER ID */}
+            <Dialog open={readModalOpen} onClose={closeReadModal} fullWidth maxWidth="xs">
+                <DialogTitle>{dAct.nfcModalReadTitle}</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" mb={2}>
+                        {dAct.nfcModalReadBody}
+                    </Typography>
+                    {scanError && (
+                        <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setScanError(null)}>
+                            {scanError}
+                        </Alert>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2, flexDirection: 'column', gap: 1 }}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        startIcon={isScanning ? <CircularProgress size={20} color="inherit" /> : <NfcIcon />}
+                        onClick={() => void handleStartReadInModal()}
+                        disabled={isScanning || !isWebNfcSupported()}
+                    >
+                        {isScanning ? dAct.nfcModalReading : (dAct.nfcModalReadAction ?? dAct.scanNFC)}
+                    </Button>
+                    <Button color="inherit" onClick={closeReadModal}>
+                        {dictionary.account.profile.cancel}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Modal: acercar etiqueta para GRABAR URL (solo mientras el SO pide el 2.º toque) */}
+            <Dialog open={writeModalOpen} fullWidth maxWidth="xs" disableEscapeKeyDown={nfcWriteInProgress}>
+                <DialogTitle>{dAct.nfcModalWriteTitle}</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" mb={2}>
+                        {dAct.nfcModalWriteBody}
+                    </Typography>
+                    <Box display="flex" justifyContent="center" py={2}>
+                        <CircularProgress />
+                    </Box>
+                </DialogContent>
+            </Dialog>
         </Box>
     );
 }
