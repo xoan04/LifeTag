@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Box,
     Typography,
@@ -73,6 +73,15 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
         void loadProfiles();
     }, [loadProfiles]);
 
+    const scanAbortRef = useRef<AbortController | null>(null);
+
+    useEffect(() => {
+        return () => {
+            scanAbortRef.current?.abort();
+            scanAbortRef.current = null;
+        };
+    }, []);
+
     const handleScanNFC = async () => {
         setScanError(null);
         setLinkError(null);
@@ -80,17 +89,24 @@ export default function ActivateClient({ dictionary, lang }: { dictionary: any; 
             setScanError(isAppleMobileWeb() ? dAct.nfcUnsupportedApple : dAct.nfcUnsupported);
             return;
         }
+        scanAbortRef.current?.abort();
+        const ac = new AbortController();
+        scanAbortRef.current = ac;
         setIsScanning(true);
         try {
-            const token = await readNfcTagOnce();
+            const token = await readNfcTagOnce(ac.signal);
+            if (ac.signal.aborted) return;
             setDeviceId(token);
             setInputMode('manual');
         } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') return;
+            if (err instanceof Error && err.name === 'AbortError') return;
             const kind = classifyNfcFailure(err);
             if (kind === 'cancelled') setScanError(dAct.nfcCancelled);
             else setScanError(dAct.nfcReadFailed);
         } finally {
             setIsScanning(false);
+            if (scanAbortRef.current === ac) scanAbortRef.current = null;
         }
     };
 

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Box, Typography, Button, Grid, Card, CardContent, Chip, Fab,
     Tab, Tabs, CircularProgress, Alert, Snackbar, Stack, Divider,
@@ -78,6 +78,11 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
     const [isScanning, setIsScanning] = useState(false);
     const [activateScanError, setActivateScanError] = useState<string | null>(null);
 
+    /** Evita aplicar resultado de lectura si el usuario ya cerró el modal. */
+    const activateDialogOpenRef = useRef(false);
+    /** Cancela el scan NFC al cerrar el modal o al iniciar un nuevo escaneo. */
+    const activateScanAbortRef = useRef<AbortController | null>(null);
+
     const handleActivateScanNFC = async () => {
         setActivateScanError(null);
         const dAct = dict.dashboard?.activate;
@@ -91,17 +96,24 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
             );
             return;
         }
+        activateScanAbortRef.current?.abort();
+        const ac = new AbortController();
+        activateScanAbortRef.current = ac;
         setIsScanning(true);
         try {
-            const token = await readNfcTagOnce();
+            const token = await readNfcTagOnce(ac.signal);
+            if (ac.signal.aborted || !activateDialogOpenRef.current) return;
             setActivateToken(token);
             setInputMode('manual');
         } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') return;
+            if (err instanceof Error && err.name === 'AbortError') return;
             const kind = classifyNfcFailure(err);
             if (kind === 'cancelled') setActivateScanError(dAct?.nfcCancelled ?? 'Cancelado.');
             else setActivateScanError(dAct?.nfcReadFailed ?? 'No se pudo leer el tag.');
         } finally {
             setIsScanning(false);
+            if (activateScanAbortRef.current === ac) activateScanAbortRef.current = null;
         }
     };
 
@@ -165,7 +177,15 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
 
     const dAct = dict.dashboard?.activate;
 
+    const openActivateDialog = () => {
+        activateDialogOpenRef.current = true;
+        setActivateOpen(true);
+    };
+
     const closeActivateDialog = () => {
+        activateDialogOpenRef.current = false;
+        activateScanAbortRef.current?.abort();
+        activateScanAbortRef.current = null;
         setActivateOpen(false);
         setActivateScanError(null);
         setActivateNfcWriteError(null);
@@ -292,7 +312,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     <Button
                         variant="outlined"
                         startIcon={<LinkIcon />}
-                        onClick={() => { setActivateOpen(true); }}
+                        onClick={() => openActivateDialog()}
                         sx={{ display: { xs: 'none', sm: 'flex' } }}
                     >
                         {dict.dashboard.home.activateDevice}
@@ -448,7 +468,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                     <Box textAlign="center" py={8}>
                         <DevicesIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
                         <Typography color="text.secondary" mb={2}>{dDevices.empty}</Typography>
-                        <Button variant="contained" startIcon={<LinkIcon />} onClick={() => setActivateOpen(true)}>
+                        <Button variant="contained" startIcon={<LinkIcon />} onClick={() => openActivateDialog()}>
                             {dDevices.emptyAction}
                         </Button>
                     </Box>
@@ -535,7 +555,7 @@ export default function ProfilesClient({ dictionary, lang }: { dictionary: any; 
                 color="secondary"
                 aria-label="activate-device"
                 sx={{ position: 'fixed', bottom: 24, right: 24, display: { xs: 'flex', sm: 'none' } }}
-                onClick={() => setActivateOpen(true)}
+                onClick={() => openActivateDialog()}
             >
                 <LinkIcon />
             </Fab>

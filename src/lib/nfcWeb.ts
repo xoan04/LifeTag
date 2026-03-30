@@ -210,10 +210,16 @@ function tokenFromUrl(url: string): string {
  * 1) UID físico del chip (serialNumber), si el navegador lo expone
  * 2) Texto NDEF
  * 3) URL NDEF (último segmento o token en la ruta)
+ *
+ * @param signal Si se aborta (p. ej. al cerrar el modal), se cancela el scan y no se aplica ningún resultado.
  */
-export async function readNfcTagOnce(): Promise<string> {
+export async function readNfcTagOnce(signal?: AbortSignal): Promise<string> {
     if (!isWebNfcSupported()) {
         throw new Error('unsupported');
+    }
+
+    if (signal?.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
     }
 
     const NDEFReaderClass = (window as unknown as { NDEFReader: NfcNdefReaderClass }).NDEFReader;
@@ -226,10 +232,21 @@ export async function readNfcTagOnce(): Promise<string> {
             settled = true;
             ndef.removeEventListener('reading', onReading);
             ndef.removeEventListener('readingerror', onReadingError);
+            if (signal) signal.removeEventListener('abort', onAbort);
             fn();
         };
 
+        const onAbort = () => {
+            finish(() => reject(new DOMException('Aborted', 'AbortError')));
+        };
+
+        if (signal) {
+            signal.addEventListener('abort', onAbort, { once: true });
+        }
+
         const onReading = (event: Event) => {
+            if (signal?.aborted) return;
+
             const { serialNumber, message } = event as NfcReadingEvent;
 
             const ndefRecords = message.records.map((r) => {
@@ -293,7 +310,12 @@ export async function readNfcTagOnce(): Promise<string> {
         ndef.addEventListener('reading', onReading);
         ndef.addEventListener('readingerror', onReadingError);
 
-        ndef.scan().catch((err: unknown) => {
+        const scanOpts = signal ? { signal } : undefined;
+        ndef.scan(scanOpts).catch((err: unknown) => {
+            if (signal?.aborted) {
+                finish(() => reject(new DOMException('Aborted', 'AbortError')));
+                return;
+            }
             finish(() => reject(err instanceof Error ? err : new Error(String(err))));
         });
     });
@@ -304,5 +326,6 @@ export function classifyNfcFailure(err: unknown): 'unsupported' | 'cancelled' | 
     if (err instanceof DOMException) {
         if (err.name === 'NotAllowedError' || err.name === 'AbortError') return 'cancelled';
     }
+    if (err instanceof Error && err.name === 'AbortError') return 'cancelled';
     return 'generic';
 }
